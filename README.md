@@ -3,9 +3,9 @@
 [![CI](https://github.com/shuenrui/rednote-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/shuenrui/rednote-cli/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue.svg)](https://github.com/shuenrui/rednote-cli)
 
-A RedNote-cookie fork of [jackwener/xiaohongshu-cli](https://github.com/jackwener/xiaohongshu-cli). It imports browser cookies from `rednote.com` by default, then uses the existing signed Xiaohongshu API transport for search, reading, interactions, and posting.
+A RedNote CLI rebuilt around RedNote's own web transport. It imports browser cookies from `rednote.com` by default and sends signed requests to `webapi.rednote.com` with `www.rednote.com` origins.
 
-> RedNote changes only the credential source. API, creator, upload, origin, and signing hosts remain on `xiaohongshu.com`; replacing those hosts breaks the current signed request flow.
+> The original Xiaohongshu profile remains available with `--cookie-domain xiaohongshu`.
 
 [English](#features) | [中文](#功能特性)
 
@@ -66,7 +66,7 @@ uv sync
 # ─── Auth ─────────────────────────────────────────
 rednote login                             # Extract rednote.com cookies from browser
 rednote login --cookie-domain xiaohongshu # Optional upstream cookie source
-rednote login --qrcode                    # Xiaohongshu QR login, scan in terminal
+rednote login --qrcode                    # RedNote QR login, scan in terminal
 rednote status                            # Check login status
 rednote whoami                            # Detailed profile (fans, likes, etc)
 rednote whoami --json                     # Structured JSON envelope
@@ -152,10 +152,10 @@ rednote-cli supports multiple authentication methods:
 
 1. **Saved cookies** — RedNote and Xiaohongshu profiles are isolated in `cookies.rednote.json` and `cookies.xiaohongshu.json`
 2. **Browser cookies** — auto-detects installed browsers and extracts `rednote.com` cookies by default
-3. **QR code login** — Xiaohongshu browser-assisted login with terminal QR output (`rednote login --qrcode`)
+3. **QR code login** — RedNote browser-assisted login with terminal QR output (`rednote login --qrcode`)
 
 `rednote login` automatically tries all installed browsers and uses the first one with valid cookies.
-Use `--cookie-source <browser>` to specify a browser. Use `--cookie-domain xiaohongshu` for the upstream cookie source, or `--qrcode` for Xiaohongshu QR login.
+Use `--cookie-source <browser>` to specify a browser. Use `--cookie-domain xiaohongshu` for the upstream cookie source, or `--qrcode` for RedNote QR login.
 Other authenticated commands automatically retry once with fresh browser cookies when the saved session has expired.
 
 ### Cookie TTL

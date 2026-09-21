@@ -13,7 +13,7 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
-from .constants import CREATOR_HOST, HOME_URL, UPLOAD_HOST, USER_AGENT
+from .constants import USER_AGENT
 from .cookies import (
     cache_note_context,
     cookies_to_string,
@@ -204,16 +204,16 @@ class ReadingEndpointsMixin:
         xsec_source: str = "pc_feed",
     ) -> str:
         if xsec_token:
-            url = f"{HOME_URL}/explore/{note_id}?xsec_token={xsec_token}&xsec_source={xsec_source}"
+            url = f"{self._home_url}/explore/{note_id}?xsec_token={xsec_token}&xsec_source={xsec_source}"
         else:
-            url = f"{HOME_URL}/explore/{note_id}"
+            url = f"{self._home_url}/explore/{note_id}"
 
         resp = self._request_with_retry(
             "GET",
             url,
             headers={
                 "user-agent": USER_AGENT,
-                "referer": f"{HOME_URL}/",
+                "referer": f"{self._home_url}/",
                 "cookie": cookies_to_string(self.cookies),
             },
         )
@@ -556,7 +556,7 @@ class CreatorEndpointsMixin:
         with open(file_path, "rb") as f:
             file_data = f.read()
 
-        url = f"{UPLOAD_HOST}/{file_id}"
+        url = f"{self._upload_host}/{file_id}"
         content_type = content_type or mimetypes.guess_type(file_path)[0] or "application/octet-stream"
         resp = self._request_with_retry(
             "PUT",
@@ -603,8 +603,8 @@ class CreatorEndpointsMixin:
             "video_info": None,
         }
         return self._main_api_post("/web_api/sns/v2/note", data, {
-            "origin": CREATOR_HOST,
-            "referer": f"{CREATOR_HOST}/",
+            "origin": self._creator_host_url,
+            "referer": f"{self._creator_host_url}/",
         })
 
     def delete_note(self, note_id: str) -> dict[str, Any]:

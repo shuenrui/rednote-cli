@@ -43,7 +43,7 @@ def get_client(ctx, *, force_refresh: bool = False) -> XhsClient:
         force_refresh=force_refresh,
         cookie_domain=_cookie_domain(ctx),
     )
-    return XhsClient(cookies)
+    return XhsClient(cookies, cookie_domain=_cookie_domain(ctx))
 
 
 def run_client_action(ctx, action: Callable[[XhsClient], T]) -> T:

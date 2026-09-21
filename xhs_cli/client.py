@@ -22,7 +22,7 @@ from .client_mixins import (
     ReadingEndpointsMixin,
     SocialEndpointsMixin,
 )
-from .constants import CHROME_VERSION, CREATOR_HOST, EDITH_HOST, HOME_URL, USER_AGENT
+from .constants import CHROME_VERSION, DEFAULT_COOKIE_DOMAIN, USER_AGENT, profile_hosts
 from .cookies import cookies_to_string
 from .creator_signing import sign_creator
 from .exceptions import (
@@ -45,16 +45,23 @@ class XhsClient(
     NotificationEndpointsMixin,
     AuthEndpointsMixin,
 ):
-    """Xiaohongshu API client with automatic signing, rate limiting, and retry."""
+    """RedNote/Xiaohongshu API client with signing, rate limiting, and retry."""
 
     def __init__(
         self,
         cookies: dict[str, str],
+        cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
         timeout: float = 30.0,
         request_delay: float = 1.0,
         max_retries: int = 3,
     ):
         self.cookies = cookies
+        self.cookie_domain = cookie_domain
+        hosts = profile_hosts(cookie_domain)
+        self._api_host = hosts["api"]
+        self._home_url = hosts["home"]
+        self._creator_host_url = hosts["creator"]
+        self._upload_host = hosts["upload"]
         self._http = httpx.Client(timeout=timeout, follow_redirects=True)
         self._request_delay = request_delay
         self._base_request_delay = request_delay
@@ -94,8 +101,8 @@ class XhsClient(
             "user-agent": USER_AGENT,
             "content-type": "application/json;charset=UTF-8",
             "cookie": cookies_to_string(self.cookies),
-            "origin": HOME_URL,
-            "referer": f"{HOME_URL}/",
+            "origin": self._home_url,
+            "referer": f"{self._home_url}/",
             "sec-ch-ua": f'"Not:A-Brand";v="99", "Google Chrome";v="{CHROME_VERSION}", "Chromium";v="{CHROME_VERSION}"',
             "sec-ch-ua-mobile": "?0",
             "sec-ch-ua-platform": '"macOS"',
@@ -195,7 +202,7 @@ class XhsClient(
     ) -> Any:
         sign_headers = sign_main_api("GET", uri, self.cookies, params=params)
         full_uri = build_get_uri(uri, params)
-        url = f"{EDITH_HOST}{full_uri}"
+        url = f"{self._api_host}{full_uri}"
         logger.debug("GET %s", url)
         resp = self._request_with_retry("GET", url, headers={**self._base_headers(), **sign_headers})
         return self._handle_response(resp)
@@ -207,7 +214,7 @@ class XhsClient(
         header_overrides: dict[str, str] | None = None,
     ) -> Any:
         sign_headers = sign_main_api("POST", uri, self.cookies, payload=data)
-        url = f"{EDITH_HOST}{uri}"
+        url = f"{self._api_host}{uri}"
         headers = {**self._base_headers(), **sign_headers}
         if header_overrides:
             headers.update(header_overrides)
@@ -217,7 +224,7 @@ class XhsClient(
         return self._handle_response(resp)
 
     def _creator_host(self, uri: str) -> str:
-        return CREATOR_HOST if uri.startswith("/api/galaxy/") else EDITH_HOST
+        return self._creator_host_url if uri.startswith("/api/galaxy/") else self._api_host
 
     def _creator_get(
         self,
@@ -232,8 +239,8 @@ class XhsClient(
             **self._base_headers(),
             "x-s": sign["x-s"],
             "x-t": sign["x-t"],
-            "origin": CREATOR_HOST,
-            "referer": f"{CREATOR_HOST}/",
+            "origin": self._creator_host_url,
+            "referer": f"{self._creator_host_url}/",
         }
         logger.debug("Creator GET %s", url)
         resp = self._request_with_retry("GET", url, headers=headers)
@@ -247,8 +254,8 @@ class XhsClient(
             **self._base_headers(),
             "x-s": sign["x-s"],
             "x-t": sign["x-t"],
-            "origin": CREATOR_HOST,
-            "referer": f"{CREATOR_HOST}/",
+            "origin": self._creator_host_url,
+            "referer": f"{self._creator_host_url}/",
         }
         logger.debug("Creator POST %s", url)
         body = json.dumps(data, separators=(",", ":"), ensure_ascii=False)

@@ -75,16 +75,22 @@ def login(
 ):
     """Log in by extracting cookies from browser, or via QR code."""
 
+    if cookie_domain is None:
+        cookie_domain = ctx.obj.get("cookie_domain", DEFAULT_COOKIE_DOMAIN) if ctx.obj else DEFAULT_COOKIE_DOMAIN
+
     if use_qrcode:
         def _login_with_qrcode() -> None:
             from ..qr_login import qrcode_login
 
-            cookies = qrcode_login(prefer_browser_assisted=True)
+            cookies = qrcode_login(
+                cookie_domain=cookie_domain,
+                prefer_browser_assisted=True,
+            )
 
             # Verify by fetching user info (may return guest=true briefly)
             import time
             time.sleep(1)  # brief delay for session propagation
-            with XhsClient(cookies) as client:
+            with XhsClient(cookies, cookie_domain=cookie_domain) as client:
                 info = client.get_self_info()
             user = normalize_xhs_user_payload(info)
 
@@ -111,9 +117,6 @@ def login(
     # Browser cookie extraction (default)
     if cookie_source is None:
         cookie_source = ctx.obj.get("cookie_source", "auto") if ctx.obj else "auto"
-    if cookie_domain is None:
-        cookie_domain = ctx.obj.get("cookie_domain", DEFAULT_COOKIE_DOMAIN) if ctx.obj else DEFAULT_COOKIE_DOMAIN
-
     def _login_with_browser() -> None:
         browser, cookies = get_cookies(
             cookie_source,
@@ -123,13 +126,13 @@ def login(
         print_success(f"{cookie_domain} cookies extracted from {browser}")
 
         # Verify by fetching user info, retry once if session not yet propagated
-        with XhsClient(cookies) as client:
+        with XhsClient(cookies, cookie_domain=cookie_domain) as client:
             info = client.get_self_info()
         user = normalize_xhs_user_payload(info)
 
         if not _is_valid_login(user):
             time.sleep(2.5)
-            with XhsClient(cookies) as client:
+            with XhsClient(cookies, cookie_domain=cookie_domain) as client:
                 info = client.get_self_info()
             user = normalize_xhs_user_payload(info)
 

@@ -225,7 +225,20 @@ def test_normalize_browser_cookies_uses_allowlist():
         {"name": "web_session", "value": "session-value", "domain": ".xiaohongshu.com"},
         {"name": "customer-sso-sid", "value": "skip-me", "domain": ".xiaohongshu.com"},
         {"name": "creator_only", "value": "skip-me-too", "domain": "creator.xiaohongshu.com"},
-    ])
+    ], "xiaohongshu")
+
+    assert cookies == {
+        "a1": "a1-value",
+        "web_session": "session-value",
+    }
+
+
+def test_normalize_browser_cookies_supports_rednote_domain():
+    cookies = _normalize_browser_cookies([
+        {"name": "a1", "value": "a1-value", "domain": ".rednote.com"},
+        {"name": "web_session", "value": "session-value", "domain": "www.rednote.com"},
+        {"name": "ignored", "value": "bad", "domain": "evilrednote.com"},
+    ], "rednote")
 
     assert cookies == {
         "a1": "a1-value",

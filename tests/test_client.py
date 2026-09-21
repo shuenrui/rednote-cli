@@ -100,6 +100,15 @@ class TestTransportCookies:
         assert client.cookies["web_session"] == "real-session"
         assert client.cookies["web_session_sec"] == "real-sec"
 
+    def test_rednote_profile_uses_rednote_api_and_origin(self):
+        client = XhsClient({"a1": "cookie"}, cookie_domain="rednote", request_delay=0)
+        try:
+            assert client._api_host == "https://webapi.rednote.com"
+            assert client._home_url == "https://www.rednote.com"
+            assert client._base_headers()["origin"] == "https://www.rednote.com"
+        finally:
+            client.close()
+
 
 class TestReadingEndpointBehavior:
     def test_get_note_detail_prefers_cached_xsec_source(self, monkeypatch):

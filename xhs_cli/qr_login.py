@@ -19,12 +19,13 @@ import time
 from typing import Any
 
 from .client import XhsClient
+from .constants import COOKIE_DOMAINS, DEFAULT_COOKIE_DOMAIN, HOME_URLS
 from .cookies import save_cookies
 from .exceptions import NeedVerifyError, XhsApiError
 
 logger = logging.getLogger(__name__)
 
-LOGIN_URL = "https://www.xiaohongshu.com/login"
+LOGIN_URL = HOME_URLS[DEFAULT_COOKIE_DOMAIN] + "/login"
 QR_CREATE_ENDPOINT = "/api/sns/web/v1/login/qrcode/create"
 QR_USERINFO_ENDPOINT = "/api/qrcode/userinfo"
 QR_STATUS_ENDPOINT = "/api/sns/web/v1/login/qrcode/status"
@@ -100,7 +101,10 @@ def _build_saved_cookies(a1: str, webid: str, payload: dict[str, Any]) -> dict[s
     return cookies
 
 
-def _normalize_browser_cookies(raw_cookies: list[dict[str, Any]]) -> dict[str, str]:
+def _normalize_browser_cookies(
+    raw_cookies: list[dict[str, Any]],
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
+) -> dict[str, str]:
     """Convert Playwright cookies into the local persisted cookie shape."""
     cookies: dict[str, str] = {}
     for entry in raw_cookies:
@@ -111,7 +115,9 @@ def _normalize_browser_cookies(raw_cookies: list[dict[str, Any]]) -> dict[str, s
             continue
         if name not in BROWSER_EXPORT_COOKIE_NAMES:
             continue
-        if not isinstance(domain, str) or "xiaohongshu.com" not in domain:
+        root = COOKIE_DOMAINS[cookie_domain]
+        normalized_domain = domain.lower().lstrip(".") if isinstance(domain, str) else ""
+        if normalized_domain != root and not normalized_domain.endswith(f".{root}"):
             continue
         cookies[name] = value
     return cookies
@@ -339,6 +345,7 @@ def _ensure_camoufox_ready() -> None:
 
 def _browser_assisted_qrcode_login(
     *,
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
     on_status: callable[[str], None] | None = None,
     timeout_s: int = POLL_TIMEOUT_S,
 ) -> dict[str, str]:
@@ -386,16 +393,16 @@ def _browser_assisted_qrcode_login(
                 lambda response: QR_CREATE_ENDPOINT in response.url and response.request.method == "POST",
                 timeout=20_000,
             ) as qr_response_info:
-                page.goto(LOGIN_URL, wait_until="domcontentloaded")
+                page.goto(f"{HOME_URLS[cookie_domain]}/login", wait_until="domcontentloaded")
         except Exception as exc:
-            raise XhsApiError("Failed to load Xiaohongshu login page in Camoufox.") from exc
+            raise XhsApiError("Failed to load RedNote login page in Camoufox.") from exc
 
         qr_payload = _browser_response_payload(qr_response_info.value)
         qr_url = str(qr_payload.get("url", "")).strip()
         if not qr_url:
             raise XhsApiError(f"Browser-assisted QR login did not expose a QR URL: {qr_payload}")
 
-        _emit_status(on_status, "\n📱 Scan the QR code below with the Xiaohongshu app:\n")
+        _emit_status(on_status, "\n📱 Scan the QR code below with the RedNote app:\n")
         if not _display_qr_in_terminal(qr_url):
             _emit_status(on_status, "⚠️  Install 'qrcode' for terminal rendering: pip install qrcode")
             _emit_status(on_status, f"QR URL: {qr_url}")
@@ -418,7 +425,7 @@ def _browser_assisted_qrcode_login(
 
         _wait_for_browser_login_settled(page)
 
-        cookies = _normalize_browser_cookies(page.context.cookies())
+        cookies = _normalize_browser_cookies(page.context.cookies(), cookie_domain)
         session = login_info.get("session")
         secure_session = login_info.get("secure_session")
         if isinstance(session, str) and session:
@@ -434,7 +441,7 @@ def _browser_assisted_qrcode_login(
                 f"missing={', '.join(missing)} completion_data={completion_data}"
             )
 
-        save_cookies(cookies, "xiaohongshu")
+        save_cookies(cookies, cookie_domain)
 
         user_id = str(login_info.get("user_id", "")).strip() or _resolved_user_id(completion_data)
         if user_id:
@@ -445,6 +452,7 @@ def _browser_assisted_qrcode_login(
 
 def _http_qrcode_login(
     *,
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
     on_status: callable[[str], None] | None = None,
     timeout_s: int = POLL_TIMEOUT_S,
 ) -> dict[str, str]:
@@ -455,7 +463,7 @@ def _http_qrcode_login(
 
     _emit_status(on_status, "🔑 Starting QR code login...")
 
-    with XhsClient(tmp_cookies, request_delay=0) as client:
+    with XhsClient(tmp_cookies, cookie_domain=cookie_domain, request_delay=0) as client:
         try:
             activate_data = client.login_activate()
             _apply_session_cookies(client, activate_data)
@@ -521,7 +529,7 @@ def _http_qrcode_login(
                 )
                 user_id = _resolved_user_id(completion_data) or confirmed_user_id
                 cookies = _build_saved_cookies(a1, webid, client.cookies)
-                save_cookies(cookies, "xiaohongshu")
+                save_cookies(cookies, cookie_domain)
                 _emit_status(on_status, f"👤 User ID: {user_id}")
                 return cookies
 
@@ -534,6 +542,7 @@ def _http_qrcode_login(
 
 def qrcode_login(
     *,
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
     on_status: callable[[str], None] | None = None,
     timeout_s: int = POLL_TIMEOUT_S,
     prefer_browser_assisted: bool = False,
@@ -541,8 +550,12 @@ def qrcode_login(
     """Run the QR code login flow."""
     if prefer_browser_assisted:
         try:
-            return _browser_assisted_qrcode_login(on_status=on_status, timeout_s=timeout_s)
+            return _browser_assisted_qrcode_login(
+                cookie_domain=cookie_domain,
+                on_status=on_status,
+                timeout_s=timeout_s,
+            )
         except BrowserQrLoginUnavailable as exc:
             logger.info("Browser-assisted QR login unavailable, falling back to HTTP flow: %s", exc)
 
-    return _http_qrcode_login(on_status=on_status, timeout_s=timeout_s)
+    return _http_qrcode_login(cookie_domain=cookie_domain, on_status=on_status, timeout_s=timeout_s)

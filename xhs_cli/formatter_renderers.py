@@ -7,6 +7,7 @@ from typing import Any
 from rich.panel import Panel
 from rich.table import Table
 
+from .constants import DEFAULT_COOKIE_DOMAIN, HOME_URLS
 from .formatter_normalizers import (
     normalize_comments,
     normalize_creator_notes,
@@ -21,7 +22,7 @@ from .formatter_normalizers import (
 )
 from .formatter_utils import coerce_int, console, format_count, print_error, print_info
 
-HOME_URL = "https://www.xiaohongshu.com"
+HOME_URL = HOME_URLS[DEFAULT_COOKIE_DOMAIN]
 
 
 def _build_note_url(

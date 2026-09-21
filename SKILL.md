@@ -15,7 +15,7 @@ tags:
 # rednote-cli — Xiaohongshu CLI Tool
 
 **Binary:** `rednote`
-**Credentials:** `rednote.com` browser cookies by default, or Xiaohongshu browser-assisted QR login (`--qrcode`)
+**Credentials:** `rednote.com` browser cookies by default, or RedNote browser-assisted QR login (`--qrcode`)
 
 ## Setup
 
@@ -50,7 +50,7 @@ Ensure user is logged into rednote.com in any browser supported by [browser_cook
 rednote login                              # auto-detect browser with valid cookies
 rednote login --cookie-source arc          # specify browser explicitly
 rednote login --cookie-domain xiaohongshu  # optional upstream cookie source
-rednote login --qrcode                     # Xiaohongshu QR login with terminal QR output
+rednote login --qrcode                     # RedNote QR login with terminal QR output
 ```
 
 Verify with:

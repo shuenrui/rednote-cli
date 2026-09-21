@@ -1,5 +1,5 @@
 """
-Main API signing for edith.xiaohongshu.com
+Main API signing for the RedNote/Xiaohongshu web API profiles.
 
 Thin adapter over the xhshow library, configured for macOS/Chrome.
 Maintains a persistent SessionManager for realistic session simulation.
@@ -62,7 +62,7 @@ def sign_main_api(
     timestamp: float | None = None,
 ) -> dict[str, str]:
     """
-    Generate all signing headers for a main API (edith.xiaohongshu.com) request.
+    Generate all signing headers for a main API request.
 
     Returns dict with keys: x-s, x-s-common, x-t, x-b3-traceid, x-xray-traceid
     """
