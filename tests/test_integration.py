@@ -26,13 +26,13 @@ from xhs_cli.exceptions import NoCookieError, SessionExpiredError, XhsApiError
 def _get_test_cookies():
     """Try to get valid cookies for integration testing."""
     try:
-        cookies = get_cookies("chrome")
+        _browser, cookies = get_cookies("chrome")
         with XhsClient(cookies) as client:
             client.get_self_info()
         return cookies
     except SessionExpiredError:
         try:
-            cookies = get_cookies("chrome", force_refresh=True)
+            _browser, cookies = get_cookies("chrome", force_refresh=True)
             with XhsClient(cookies) as client:
                 client.get_self_info()
             return cookies

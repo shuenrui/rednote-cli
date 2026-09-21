@@ -19,6 +19,12 @@ PLATFORM = "macOS"
 
 # Config directory
 CONFIG_DIR_NAME = ".xiaohongshu-cli"
-COOKIE_FILE = "cookies.json"
+DEFAULT_COOKIE_DOMAIN = "rednote"
+COOKIE_DOMAINS = {
+    "rednote": "rednote.com",
+    "xiaohongshu": "xiaohongshu.com",
+}
+COOKIE_FILE_TEMPLATE = "cookies.{profile}.json"
+LEGACY_COOKIE_FILE = "cookies.json"
 TOKEN_CACHE_FILE = "token_cache.json"
 INDEX_CACHE_FILE = "index_cache.json"

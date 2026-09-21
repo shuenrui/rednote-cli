@@ -32,6 +32,7 @@ import click
 
 from . import __version__
 from .commands import auth, creator, interactions, notifications, reading, social
+from .constants import COOKIE_DOMAINS, DEFAULT_COOKIE_DOMAIN
 
 
 def _fix_windows_encoding() -> None:
@@ -56,11 +57,19 @@ _fix_windows_encoding()
     show_default=True,
     help="Browser to read cookies from (auto = try all installed browsers)",
 )
+@click.option(
+    "--cookie-domain",
+    type=click.Choice(tuple(COOKIE_DOMAINS)),
+    default=DEFAULT_COOKIE_DOMAIN,
+    show_default=True,
+    help="Website domain to read browser cookies from",
+)
 @click.pass_context
-def cli(ctx, verbose: bool, cookie_source: str):
+def cli(ctx, verbose: bool, cookie_source: str, cookie_domain: str):
     """xhs — Xiaohongshu CLI via reverse-engineered API 📕"""
     ctx.ensure_object(dict)
     ctx.obj["cookie_source"] = cookie_source
+    ctx.obj["cookie_domain"] = cookie_domain
 
     if verbose:
         logging.basicConfig(level=logging.DEBUG, format="%(name)s %(message)s")

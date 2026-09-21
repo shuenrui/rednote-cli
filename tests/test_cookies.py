@@ -2,16 +2,20 @@
 
 
 import time
+from types import SimpleNamespace
 
 import pytest
 
 from xhs_cli.cookies import (
     NOTE_CONTEXT_TTL_SECONDS,
+    _domain_matches,
+    _extract_in_process,
     cache_note_context,
     clear_cookies,
     cookies_to_string,
     get_cached_note_context,
     get_cached_xsec_token,
+    get_cookie_path,
     get_cookies,
     get_index_cache_path,
     get_note_by_index,
@@ -27,7 +31,6 @@ from xhs_cli.cookies import (
 def tmp_config_dir(tmp_path, monkeypatch):
     """Override config dir to use temp directory."""
     monkeypatch.setattr("xhs_cli.cookies.get_config_dir", lambda: tmp_path)
-    monkeypatch.setattr("xhs_cli.cookies.get_cookie_path", lambda: tmp_path / "cookies.json")
     monkeypatch.setattr("xhs_cli.cookies._TOKEN_CACHE_MEMORY", None)
     monkeypatch.setattr("xhs_cli.cookies._TOKEN_CACHE_PATH", None)
     return tmp_path
@@ -47,7 +50,7 @@ class TestSaveCookies:
         cookies = {"a1": "test"}
         save_cookies(cookies)
 
-        cookie_file = tmp_config_dir / "cookies.json"
+        cookie_file = get_cookie_path()
         stat = cookie_file.stat()
         assert stat.st_mode & 0o777 == 0o600
 
@@ -57,11 +60,11 @@ class TestLoadSavedCookies:
         assert load_saved_cookies() is None
 
     def test_invalid_json(self, tmp_config_dir):
-        (tmp_config_dir / "cookies.json").write_text("not json")
+        get_cookie_path().write_text("not json")
         assert load_saved_cookies() is None
 
     def test_missing_a1(self, tmp_config_dir):
-        (tmp_config_dir / "cookies.json").write_text('{"web_session": "x"}')
+        get_cookie_path().write_text('{"web_session": "x"}')
         assert load_saved_cookies() is None
 
 
@@ -86,10 +89,10 @@ class TestCookiesToString:
 
 class TestGetCookies:
     def test_prefers_saved_cookies_by_default(self, monkeypatch):
-        monkeypatch.setattr("xhs_cli.cookies.load_saved_cookies", lambda: {"a1": "saved"})
+        monkeypatch.setattr("xhs_cli.cookies.load_saved_cookies", lambda domain: {"a1": "saved"})
         monkeypatch.setattr(
             "xhs_cli.cookies.extract_browser_cookies",
-            lambda source: ("chrome", {"a1": "fresh"}),
+            lambda source, domain: ("chrome", {"a1": "fresh"}),
         )
 
         browser, cookies = get_cookies("chrome")
@@ -97,18 +100,51 @@ class TestGetCookies:
         assert cookies == {"a1": "saved"}
 
     def test_force_refresh_bypasses_saved_cookies(self, monkeypatch):
-        monkeypatch.setattr("xhs_cli.cookies.load_saved_cookies", lambda: {"a1": "saved"})
+        monkeypatch.setattr("xhs_cli.cookies.load_saved_cookies", lambda domain: {"a1": "saved"})
         monkeypatch.setattr(
             "xhs_cli.cookies.extract_browser_cookies",
-            lambda source: ("chrome", {"a1": "fresh"}),
+            lambda source, domain: ("chrome", {"a1": "fresh"}),
         )
         saved = []
-        monkeypatch.setattr("xhs_cli.cookies.save_cookies", lambda cookies: saved.append(cookies))
+        monkeypatch.setattr("xhs_cli.cookies.save_cookies", lambda cookies, domain: saved.append((cookies, domain)))
 
         browser, cookies = get_cookies("chrome", force_refresh=True)
         assert browser == "chrome"
         assert cookies == {"a1": "fresh"}
-        assert saved == [{"a1": "fresh"}]
+        assert saved == [({"a1": "fresh"}, "rednote")]
+
+    def test_profiles_use_separate_saved_files(self, tmp_config_dir):
+        save_cookies({"a1": "rednote-a1"}, "rednote")
+        save_cookies({"a1": "xhs-a1"}, "xiaohongshu")
+
+        assert load_saved_cookies("rednote")["a1"] == "rednote-a1"
+        assert load_saved_cookies("xiaohongshu")["a1"] == "xhs-a1"
+        assert get_cookie_path("rednote") != get_cookie_path("xiaohongshu")
+
+
+class TestBrowserExtraction:
+    @pytest.mark.parametrize("domain", ["rednote.com", ".rednote.com", "www.rednote.com"])
+    def test_domain_match_accepts_root_and_subdomains(self, domain):
+        assert _domain_matches(domain, "rednote.com")
+
+    @pytest.mark.parametrize("domain", ["evilrednote.com", "rednote.com.example.org", ""])
+    def test_domain_match_rejects_lookalikes(self, domain):
+        assert not _domain_matches(domain, "rednote.com")
+
+    def test_rednote_profile_queries_only_rednote_domain(self, monkeypatch):
+        requested = []
+
+        def loader(*, domain_name):
+            requested.append(domain_name)
+            return [
+                SimpleNamespace(name="a1", value="rednote-a1", domain=".rednote.com"),
+                SimpleNamespace(name="ignored", value="bad", domain="evilrednote.com"),
+            ]
+
+        monkeypatch.setattr("xhs_cli.cookies._get_browser_loader", lambda source: loader)
+
+        assert _extract_in_process("chrome", "rednote") == {"a1": "rednote-a1"}
+        assert requested == [".rednote.com"]
 
 
 class TestNoteContextCache:

@@ -6,6 +6,7 @@ import click
 
 from ..client import XhsClient
 from ..command_normalizers import normalize_xhs_user_payload
+from ..constants import COOKIE_DOMAINS, DEFAULT_COOKIE_DOMAIN
 from ..cookies import clear_cookies, get_cookies
 from ..exceptions import XhsApiError
 from ..formatter import (
@@ -54,11 +55,24 @@ def _print_status_summary(user: dict[str, object]) -> None:
     default=None,
     help="Browser to read cookies from (default: auto-detect all installed browsers)",
 )
+@click.option(
+    "--cookie-domain",
+    type=click.Choice(tuple(COOKIE_DOMAINS)),
+    default=None,
+    help="Website domain to read browser cookies from (default: rednote)",
+)
 @structured_output_options
 @click.option("--qrcode", "use_qrcode", is_flag=True, default=False,
               help="Login via QR code (scan with Xiaohongshu app)")
 @click.pass_context
-def login(ctx, cookie_source: str | None, as_json: bool, as_yaml: bool, use_qrcode: bool):
+def login(
+    ctx,
+    cookie_source: str | None,
+    cookie_domain: str | None,
+    as_json: bool,
+    as_yaml: bool,
+    use_qrcode: bool,
+):
     """Log in by extracting cookies from browser, or via QR code."""
 
     if use_qrcode:
@@ -97,10 +111,16 @@ def login(ctx, cookie_source: str | None, as_json: bool, as_yaml: bool, use_qrco
     # Browser cookie extraction (default)
     if cookie_source is None:
         cookie_source = ctx.obj.get("cookie_source", "auto") if ctx.obj else "auto"
+    if cookie_domain is None:
+        cookie_domain = ctx.obj.get("cookie_domain", DEFAULT_COOKIE_DOMAIN) if ctx.obj else DEFAULT_COOKIE_DOMAIN
 
     def _login_with_browser() -> None:
-        browser, cookies = get_cookies(cookie_source, force_refresh=True)
-        print_success(f"Cookies extracted from {browser}")
+        browser, cookies = get_cookies(
+            cookie_source,
+            force_refresh=True,
+            cookie_domain=cookie_domain,
+        )
+        print_success(f"{cookie_domain} cookies extracted from {browser}")
 
         # Verify by fetching user info, retry once if session not yet propagated
         with XhsClient(cookies) as client:
@@ -150,7 +170,8 @@ def status(ctx, as_json: bool, as_yaml: bool):
 @click.pass_context
 def logout(ctx, as_json: bool, as_yaml: bool):
     """Clear saved cookies and log out."""
-    clear_cookies()
+    cookie_domain = ctx.obj.get("cookie_domain", DEFAULT_COOKIE_DOMAIN) if ctx.obj else DEFAULT_COOKIE_DOMAIN
+    clear_cookies(cookie_domain)
     if not _emit_payload({"logged_out": True}, as_json=as_json, as_yaml=as_yaml):
         print_success("Logged out — cookies cleared")
 

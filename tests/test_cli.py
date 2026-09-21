@@ -132,7 +132,9 @@ class TestCliBasic:
         monkeypatch.setenv("OUTPUT", "auto")
         monkeypatch.setattr(
             "xhs_cli.commands._common.get_cookies",
-            lambda source, force_refresh=False: (_ for _ in ()).throw(NoCookieError(source)),
+            lambda source, force_refresh=False, cookie_domain="rednote": (
+                _ for _ in ()
+            ).throw(NoCookieError(source, cookie_domain=cookie_domain)),
         )
 
         result = runner.invoke(cli, ["read", "abc", "--yaml"])
@@ -161,7 +163,7 @@ class TestCliBasic:
         from xhs_cli.commands import auth
 
         original_clear_cookies = auth.clear_cookies
-        auth.clear_cookies = lambda: None
+        auth.clear_cookies = lambda domain: None
         try:
             result = runner.invoke(cli, ["logout", "--yaml"])
         finally:
@@ -171,6 +173,32 @@ class TestCliBasic:
         payload = yaml.safe_load(result.output)
         assert payload["ok"] is True
         assert payload["data"]["logged_out"] is True
+
+    def test_rednote_is_default_cookie_domain(self, monkeypatch):
+        captured = {}
+
+        def fake_get_cookies(source, *, force_refresh=False, cookie_domain):
+            captured.update(source=source, force_refresh=force_refresh, cookie_domain=cookie_domain)
+            raise NoCookieError(source, cookie_domain=cookie_domain)
+
+        monkeypatch.setattr("xhs_cli.commands._common.get_cookies", fake_get_cookies)
+        result = runner.invoke(cli, ["status", "--yaml"])
+
+        assert result.exit_code != 0
+        assert captured["cookie_domain"] == "rednote"
+
+    def test_cookie_domain_can_be_overridden(self, monkeypatch):
+        captured = {}
+
+        def fake_get_cookies(source, *, force_refresh=False, cookie_domain):
+            captured["cookie_domain"] = cookie_domain
+            raise NoCookieError(source, cookie_domain=cookie_domain)
+
+        monkeypatch.setattr("xhs_cli.commands._common.get_cookies", fake_get_cookies)
+        result = runner.invoke(cli, ["--cookie-domain", "xiaohongshu", "status", "--yaml"])
+
+        assert result.exit_code != 0
+        assert captured["cookie_domain"] == "xiaohongshu"
 
     def test_delete_reports_unsupported_operation(self, monkeypatch):
         monkeypatch.setattr(

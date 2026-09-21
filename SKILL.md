@@ -1,7 +1,7 @@
 ---
 name: xiaohongshu-cli
-description: Use xiaohongshu-cli for ALL Xiaohongshu (Little Red Book, 小红书) operations — searching notes, reading content, browsing users, liking, collecting, commenting, following, and posting. Invoke whenever the user requests any Xiaohongshu interaction.
-author: jackwener
+description: Use xiaohongshu-cli with RedNote browser cookies for Xiaohongshu (Little Red Book, 小红书) operations — searching notes, reading content, browsing users, liking, collecting, commenting, following, and posting.
+author: shuenrui
 version: "0.6.4"
 tags:
   - xiaohongshu
@@ -15,18 +15,18 @@ tags:
 # xiaohongshu-cli — Xiaohongshu CLI Tool
 
 **Binary:** `xhs`
-**Credentials:** browser cookies (auto-extracted) or browser-assisted QR login (`--qrcode`)
+**Credentials:** `rednote.com` browser cookies by default, or Xiaohongshu browser-assisted QR login (`--qrcode`)
 
 ## Setup
 
 ```bash
 # Install (requires Python 3.10+)
-uv tool install xiaohongshu-cli
-# Or: pipx install xiaohongshu-cli
+uv tool install git+https://github.com/shuenrui/xiaohongshu-cli.git
+# Or: pipx install git+https://github.com/shuenrui/xiaohongshu-cli.git
 
 # Upgrade to latest (recommended to avoid API errors)
-uv tool upgrade xiaohongshu-cli
-# Or: pipx upgrade xiaohongshu-cli
+uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
+# Or: pipx install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
 ```
 
 ## Authentication
@@ -44,12 +44,13 @@ If `AUTH_NEEDED`, proceed to Step 1. Prefer `--qrcode` when browser cookie extra
 
 ### Step 1: Guide user to authenticate
 
-Ensure user is logged into xiaohongshu.com in any browser supported by [browser_cookie3](https://github.com/borisbabic/browser_cookie3). Supported browsers: Chrome, Arc, Edge, Firefox, Safari, Brave, Chromium, Opera, Opera GX, Vivaldi, LibreWolf, Lynx, w3m. Then:
+Ensure user is logged into rednote.com in any browser supported by [browser_cookie3](https://github.com/borisbabic/browser_cookie3). Supported browsers: Chrome, Arc, Edge, Firefox, Safari, Brave, Chromium, Opera, Opera GX, Vivaldi, LibreWolf, Lynx, w3m. Then:
 
 ```bash
 xhs login                              # auto-detect browser with valid cookies
 xhs login --cookie-source arc          # specify browser explicitly
-xhs login --qrcode                     # browser-assisted QR login with terminal QR output
+xhs login --cookie-domain xiaohongshu  # optional upstream cookie source
+xhs login --qrcode                     # Xiaohongshu QR login with terminal QR output
 ```
 
 Verify with:
@@ -63,7 +64,7 @@ xhs whoami
 
 | Symptom | Agent action |
 |---------|-------------|
-| `NoCookieError: No 'a1' cookie found` | Guide user to login to xiaohongshu.com in browser |
+| `NoCookieError: No 'a1' cookie found` | Guide user to log in to rednote.com in a browser |
 | `NeedVerifyError: Captcha required` | Ask user to open browser, complete captcha, then retry |
 | `IpBlockedError: IP blocked` | Suggest switching network (hotspot/VPN) |
 | `SessionExpiredError` | Run `xhs login` to refresh cookies |

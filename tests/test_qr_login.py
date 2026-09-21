@@ -119,7 +119,7 @@ def test_qrcode_login_completes_after_confirmation_and_saves_real_session(monkey
     monkeypatch.setattr("xhs_cli.qr_login._generate_webid", lambda: "webid-fixed")
     monkeypatch.setattr("xhs_cli.qr_login._display_qr_in_terminal", lambda data: True)
     monkeypatch.setattr("xhs_cli.qr_login.time.sleep", lambda seconds: None)
-    monkeypatch.setattr("xhs_cli.qr_login.save_cookies", lambda cookies: saved.append(cookies))
+    monkeypatch.setattr("xhs_cli.qr_login.save_cookies", lambda cookies, domain: saved.append(cookies))
 
     cookies = qrcode_login(timeout_s=1)
     client = _FakeQrClient.instances[-1]
@@ -146,7 +146,7 @@ def test_qrcode_login_accepts_confirmed_user_from_self_info_fallback(monkeypatch
     monkeypatch.setattr("xhs_cli.qr_login._generate_webid", lambda: "webid-fixed")
     monkeypatch.setattr("xhs_cli.qr_login._display_qr_in_terminal", lambda data: True)
     monkeypatch.setattr("xhs_cli.qr_login.time.sleep", lambda seconds: None)
-    monkeypatch.setattr("xhs_cli.qr_login.save_cookies", lambda cookies: saved.append(cookies))
+    monkeypatch.setattr("xhs_cli.qr_login.save_cookies", lambda cookies, domain: saved.append(cookies))
 
     cookies = qrcode_login(timeout_s=1)
     client = _SelfInfoFallbackQrClient.instances[-1]
@@ -169,7 +169,7 @@ def test_qrcode_login_rejects_mismatched_confirmed_user(monkeypatch):
     monkeypatch.setattr("xhs_cli.qr_login._generate_webid", lambda: "webid-fixed")
     monkeypatch.setattr("xhs_cli.qr_login._display_qr_in_terminal", lambda data: True)
     monkeypatch.setattr("xhs_cli.qr_login.time.sleep", lambda seconds: None)
-    monkeypatch.setattr("xhs_cli.qr_login.save_cookies", lambda cookies: None)
+    monkeypatch.setattr("xhs_cli.qr_login.save_cookies", lambda cookies, domain: None)
 
     with pytest.raises(XhsApiError, match="completion never returned"):
         qrcode_login(timeout_s=1)

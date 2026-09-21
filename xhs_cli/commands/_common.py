@@ -8,6 +8,7 @@ from typing import TypeVar
 import click
 
 from ..client import XhsClient
+from ..constants import DEFAULT_COOKIE_DOMAIN
 from ..cookies import get_cookies
 from ..error_codes import error_code_for_exception
 from ..exceptions import (
@@ -31,9 +32,17 @@ def _cookie_source(ctx) -> str:
     return ctx.obj.get("cookie_source", "auto") if ctx.obj else "auto"
 
 
+def _cookie_domain(ctx) -> str:
+    return ctx.obj.get("cookie_domain", DEFAULT_COOKIE_DOMAIN) if ctx.obj else DEFAULT_COOKIE_DOMAIN
+
+
 def get_client(ctx, *, force_refresh: bool = False) -> XhsClient:
     """Get a local client from the click context."""
-    _browser, cookies = get_cookies(_cookie_source(ctx), force_refresh=force_refresh)
+    _browser, cookies = get_cookies(
+        _cookie_source(ctx),
+        force_refresh=force_refresh,
+        cookie_domain=_cookie_domain(ctx),
+    )
     return XhsClient(cookies)
 
 

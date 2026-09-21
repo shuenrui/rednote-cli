@@ -434,7 +434,7 @@ def _browser_assisted_qrcode_login(
                 f"missing={', '.join(missing)} completion_data={completion_data}"
             )
 
-        save_cookies(cookies)
+        save_cookies(cookies, "xiaohongshu")
 
         user_id = str(login_info.get("user_id", "")).strip() or _resolved_user_id(completion_data)
         if user_id:
@@ -521,7 +521,7 @@ def _http_qrcode_login(
                 )
                 user_id = _resolved_user_id(completion_data) or confirmed_user_id
                 cookies = _build_saved_cookies(a1, webid, client.cookies)
-                save_cookies(cookies)
+                save_cookies(cookies, "xiaohongshu")
                 _emit_status(on_status, f"👤 User ID: {user_id}")
                 return cookies
 

@@ -51,6 +51,14 @@ class TestExtractNoteId:
         result = extract_note_id("https://www.xiaohongshu.com/explore/abc123/")
         assert result == "abc123"
 
+    def test_rednote_url(self):
+        result = extract_note_id("https://www.rednote.com/explore/abc123")
+        assert result == "abc123"
+
+    def test_lookalike_domain_is_not_parsed(self):
+        url = "https://evilrednote.com/explore/abc123"
+        assert extract_note_id(url) == url
+
 
 class TestParseNoteReference:
     def test_extracts_token_and_source(self):
@@ -60,3 +68,9 @@ class TestParseNoteReference:
         assert note_id == "abc123"
         assert token == "token-1"
         assert source == "pc_search"
+
+    def test_extracts_rednote_token_and_source(self):
+        note_id, token, source = parse_note_reference(
+            "https://www.rednote.com/explore/abc123?xsec_token=token-1&xsec_source=pc_search"
+        )
+        assert (note_id, token, source) == ("abc123", "token-1", "pc_search")

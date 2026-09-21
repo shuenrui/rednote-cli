@@ -13,7 +13,15 @@ from collections import OrderedDict
 from pathlib import Path
 from typing import Any
 
-from .constants import CONFIG_DIR_NAME, COOKIE_FILE, INDEX_CACHE_FILE, TOKEN_CACHE_FILE
+from .constants import (
+    CONFIG_DIR_NAME,
+    COOKIE_DOMAINS,
+    COOKIE_FILE_TEMPLATE,
+    DEFAULT_COOKIE_DOMAIN,
+    INDEX_CACHE_FILE,
+    LEGACY_COOKIE_FILE,
+    TOKEN_CACHE_FILE,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -34,9 +42,25 @@ def get_config_dir() -> Path:
     return config_dir
 
 
-def get_cookie_path() -> Path:
+def get_cookie_path(cookie_domain: str = DEFAULT_COOKIE_DOMAIN) -> Path:
     """Get cookie file path."""
-    return get_config_dir() / COOKIE_FILE
+    _cookie_root(cookie_domain)
+    return get_config_dir() / COOKIE_FILE_TEMPLATE.format(profile=cookie_domain)
+
+
+def _cookie_root(cookie_domain: str) -> str:
+    """Resolve a cookie profile to its trusted registrable domain."""
+    try:
+        return COOKIE_DOMAINS[cookie_domain]
+    except KeyError:
+        choices = ", ".join(COOKIE_DOMAINS)
+        raise ValueError(f"Unknown cookie domain profile: {cookie_domain!r}. Choose from: {choices}") from None
+
+
+def _domain_matches(domain: str, root: str) -> bool:
+    """Match a cookie domain without accepting lookalike suffixes."""
+    normalized = domain.lower().lstrip(".")
+    return normalized == root or normalized.endswith(f".{root}")
 
 
 def get_token_cache_path() -> Path:
@@ -49,9 +73,13 @@ def get_index_cache_path() -> Path:
     return get_config_dir() / INDEX_CACHE_FILE
 
 
-def load_saved_cookies() -> dict[str, str] | None:
+def load_saved_cookies(cookie_domain: str = DEFAULT_COOKIE_DOMAIN) -> dict[str, str] | None:
     """Load cookies from local storage."""
-    cookie_path = get_cookie_path()
+    cookie_path = get_cookie_path(cookie_domain)
+    if not cookie_path.exists() and cookie_domain == "xiaohongshu":
+        legacy_path = get_config_dir() / LEGACY_COOKIE_FILE
+        if legacy_path.exists():
+            cookie_path = legacy_path
     if not cookie_path.exists():
         return None
     try:
@@ -64,18 +92,18 @@ def load_saved_cookies() -> dict[str, str] | None:
     return None
 
 
-def save_cookies(cookies: dict[str, str]) -> None:
+def save_cookies(cookies: dict[str, str], cookie_domain: str = DEFAULT_COOKIE_DOMAIN) -> None:
     """Save cookies to local storage with restricted permissions and TTL timestamp."""
-    cookie_path = get_cookie_path()
+    cookie_path = get_cookie_path(cookie_domain)
     payload = {**cookies, "saved_at": time.time()}
     cookie_path.write_text(json.dumps(payload, indent=2))
     cookie_path.chmod(0o600)
     logger.debug("Saved cookies to %s", cookie_path)
 
 
-def clear_cookies() -> None:
+def clear_cookies(cookie_domain: str = DEFAULT_COOKIE_DOMAIN) -> None:
     """Remove saved cookies."""
-    cookie_path = get_cookie_path()
+    cookie_path = get_cookie_path(cookie_domain)
     if cookie_path.exists():
         cookie_path.unlink()
         logger.debug("Cleared cookies from %s", cookie_path)
@@ -347,7 +375,10 @@ def _get_browser_loader(source: str):
     return loader
 
 
-def _extract_in_process(source: str) -> dict[str, str] | None:
+def _extract_in_process(
+    source: str,
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
+) -> dict[str, str] | None:
     """Extract cookies in-process for macOS Keychain compatibility."""
     try:
         loader = _get_browser_loader(source)
@@ -358,22 +389,30 @@ def _extract_in_process(source: str) -> dict[str, str] | None:
         logger.debug("%s", exc)
         return None
 
+    root = _cookie_root(cookie_domain)
     try:
-        jar = loader(domain_name=".xiaohongshu.com")
+        jar = loader(domain_name=f".{root}")
     except Exception as exc:
         logger.debug("%s in-process extraction failed: %s", source, exc)
         return None
 
-    cookies = {cookie.name: cookie.value for cookie in jar if "xiaohongshu.com" in (cookie.domain or "")}
+    cookies = {
+        cookie.name: cookie.value
+        for cookie in jar
+        if _domain_matches(cookie.domain or "", root)
+    }
     if cookies.get("a1"):
-        logger.debug("Loaded XHS cookies from %s in-process", source)
+        logger.debug("Loaded %s cookies from %s in-process", cookie_domain, source)
         return cookies
 
     logger.debug("No usable a1 cookie found in %s in-process extraction", source)
     return None
 
 
-def _extract_via_subprocess(source: str) -> dict[str, str] | None:
+def _extract_via_subprocess(
+    source: str,
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
+) -> dict[str, str] | None:
     """Extract cookies via subprocess to avoid browser SQLite locks."""
     extract_script = '''
 import json, sys
@@ -383,15 +422,18 @@ except ImportError:
     print(json.dumps({"error": "browser-cookie3 not installed"}))
     sys.exit(0)
 
-source = sys.argv[1]
+source, root = sys.argv[1:3]
 loader = getattr(bc3, source, None)
 if not loader or not callable(loader):
     print(json.dumps({"error": f"Unknown browser: {source}"}))
     sys.exit(0)
 
 try:
-    cj = loader(domain_name=".xiaohongshu.com")
-    cookies = {c.name: c.value for c in cj if "xiaohongshu.com" in (c.domain or "")}
+    cj = loader(domain_name=f".{root}")
+    def domain_matches(domain):
+        normalized = (domain or "").lower().lstrip(".")
+        return normalized == root or normalized.endswith(f".{root}")
+    cookies = {c.name: c.value for c in cj if domain_matches(c.domain)}
     if cookies.get("a1"):
         print(json.dumps({"browser": source, "cookies": cookies}))
     else:
@@ -402,7 +444,7 @@ except Exception as e:
 
     try:
         result = subprocess.run(
-            [sys.executable, "-c", extract_script, source],
+            [sys.executable, "-c", extract_script, source, _cookie_root(cookie_domain)],
             capture_output=True,
             text=True,
             timeout=15,
@@ -427,7 +469,10 @@ except Exception as e:
         return None
 
 
-def extract_browser_cookies(source: str = "auto") -> tuple[str, dict[str, str]] | None:
+def extract_browser_cookies(
+    source: str = "auto",
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
+) -> tuple[str, dict[str, str]] | None:
     """
     Extract XHS cookies from browser using browser-cookie3.
 
@@ -437,10 +482,10 @@ def extract_browser_cookies(source: str = "auto") -> tuple[str, dict[str, str]] 
     Returns ``(browser_name, cookies)`` on success, or ``None``.
     """
     if source != "auto":
-        cookies = _extract_in_process(source)
+        cookies = _extract_in_process(source, cookie_domain)
         if cookies:
             return source, cookies
-        cookies = _extract_via_subprocess(source)
+        cookies = _extract_via_subprocess(source, cookie_domain)
         if cookies:
             return source, cookies
         return None
@@ -456,10 +501,10 @@ def extract_browser_cookies(source: str = "auto") -> tuple[str, dict[str, str]] 
 
     def _try_browser(browser: str) -> tuple[str, dict[str, str]] | None:
         logger.debug("Auto-detect: trying %s …", browser)
-        cookies = _extract_in_process(browser)
+        cookies = _extract_in_process(browser, cookie_domain)
         if cookies:
             return browser, cookies
-        cookies = _extract_via_subprocess(browser)
+        cookies = _extract_via_subprocess(browser, cookie_domain)
         if cookies:
             return browser, cookies
         return None
@@ -479,7 +524,10 @@ def extract_browser_cookies(source: str = "auto") -> tuple[str, dict[str, str]] 
 
 
 def get_cookies(
-    cookie_source: str = "auto", *, force_refresh: bool = False
+    cookie_source: str = "auto",
+    *,
+    force_refresh: bool = False,
+    cookie_domain: str = DEFAULT_COOKIE_DOMAIN,
 ) -> tuple[str, dict[str, str]]:
     """
     Multi-strategy cookie acquisition with TTL-based auto-refresh.
@@ -492,7 +540,7 @@ def get_cookies(
     """
     # 1. Try saved cookies first
     if not force_refresh:
-        saved = load_saved_cookies()
+        saved = load_saved_cookies(cookie_domain)
         if saved:
             saved_at = saved.pop("saved_at", 0)
             if saved_at and (time.time() - float(saved_at)) > _COOKIE_TTL_SECONDS:
@@ -500,9 +548,9 @@ def get_cookies(
                     "Cookies older than %d days, attempting browser refresh",
                     COOKIE_TTL_DAYS,
                 )
-                result = extract_browser_cookies(cookie_source)
+                result = extract_browser_cookies(cookie_source, cookie_domain)
                 if result:
-                    save_cookies(result[1])
+                    save_cookies(result[1], cookie_domain)
                     return result
                 logger.warning(
                     "Cookie refresh failed; using existing cookies (age: %d+ days)",
@@ -513,12 +561,12 @@ def get_cookies(
     # 2. Try browser extraction
     from .exceptions import NoCookieError
 
-    result = extract_browser_cookies(cookie_source)
+    result = extract_browser_cookies(cookie_source, cookie_domain)
     if result:
-        save_cookies(result[1])
+        save_cookies(result[1], cookie_domain)
         return result
 
-    raise NoCookieError(cookie_source)
+    raise NoCookieError(cookie_source, cookie_domain=cookie_domain)
 
 
 def cookies_to_string(cookies: dict[str, str]) -> str:

@@ -1,5 +1,7 @@
 """Custom exceptions for XHS API client."""
 
+from .constants import COOKIE_DOMAINS, DEFAULT_COOKIE_DOMAIN
+
 
 class XhsApiError(Exception):
     """Base exception for XHS API errors."""
@@ -50,15 +52,16 @@ class UnsupportedOperationError(XhsApiError):
 class NoCookieError(XhsApiError):
     """Raised when no valid cookies are found."""
 
-    def __init__(self, source: str, details: str = ""):
+    def __init__(self, source: str, details: str = "", cookie_domain: str = DEFAULT_COOKIE_DOMAIN):
+        domain = COOKIE_DOMAINS.get(cookie_domain, cookie_domain)
         if source == "auto":
-            msg = "No 'a1' cookie found for xiaohongshu.com in any installed browser."
+            msg = f"No 'a1' cookie found for {domain} in any installed browser."
         else:
-            msg = f"No 'a1' cookie found for xiaohongshu.com in {source}."
+            msg = f"No 'a1' cookie found for {domain} in {source}."
         if details:
             msg += f"\n{details}"
         msg += "\n\nTroubleshooting:\n"
-        msg += "  1. Open a browser and visit https://www.xiaohongshu.com/\n"
+        msg += f"  1. Open a browser and visit https://www.{domain}/\n"
         msg += "  2. Make sure you are logged in\n"
         msg += "  3. Try: xhs login --cookie-source <browser>"
         super().__init__(msg)

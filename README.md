@@ -1,10 +1,11 @@
-# xiaohongshu-cli
+# xiaohongshu-cli (RedNote cookies)
 
-[![CI](https://github.com/jackwener/xiaohongshu-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/jackwener/xiaohongshu-cli/actions/workflows/ci.yml)
-[![PyPI version](https://img.shields.io/pypi/v/xiaohongshu-cli.svg)](https://pypi.org/project/xiaohongshu-cli/)
+[![CI](https://github.com/shuenrui/xiaohongshu-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/shuenrui/xiaohongshu-cli/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue.svg)](https://pypi.org/project/xiaohongshu-cli/)
 
-A CLI for Xiaohongshu (小红书) — search, read, interact, and post via reverse-engineered API 📕
+A RedNote-cookie fork of [jackwener/xiaohongshu-cli](https://github.com/jackwener/xiaohongshu-cli). It imports browser cookies from `rednote.com` by default, then uses the existing signed Xiaohongshu API transport for search, reading, interactions, and posting.
+
+> RedNote changes only the credential source. API, creator, upload, origin, and signing hosts remain on `xiaohongshu.com`; replacing those hosts breaks the current signed request flow.
 
 [English](#features) | [中文](#功能特性)
 
@@ -35,18 +36,18 @@ A CLI for Xiaohongshu (小红书) — search, read, interact, and post via rever
 ## Installation
 
 ```bash
-# Recommended: uv tool (fast, isolated)
-uv tool install xiaohongshu-cli
+# Recommended: install this fork directly from GitHub
+uv tool install git+https://github.com/shuenrui/xiaohongshu-cli.git
 
 # Or: pipx
-pipx install xiaohongshu-cli
+pipx install git+https://github.com/shuenrui/xiaohongshu-cli.git
 ```
 
 Upgrade to the latest version:
 
 ```bash
-uv tool upgrade xiaohongshu-cli
-# Or: pipx upgrade xiaohongshu-cli
+uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
+# Or: pipx install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
 ```
 
 > **Tip:** Upgrade regularly to avoid unexpected errors from outdated API handling.
@@ -54,7 +55,7 @@ uv tool upgrade xiaohongshu-cli
 From source:
 
 ```bash
-git clone git@github.com:jackwener/xiaohongshu-cli.git
+git clone git@github.com:shuenrui/xiaohongshu-cli.git
 cd xiaohongshu-cli
 uv sync
 ```
@@ -63,8 +64,9 @@ uv sync
 
 ```bash
 # ─── Auth ─────────────────────────────────────────
-xhs login                             # Extract cookies from browser
-xhs login --qrcode                    # Browser-assisted QR login, scan in terminal
+xhs login                             # Extract rednote.com cookies from browser
+xhs login --cookie-domain xiaohongshu # Optional upstream cookie source
+xhs login --qrcode                    # Xiaohongshu QR login, scan in terminal
 xhs status                            # Check login status
 xhs whoami                            # Detailed profile (fans, likes, etc)
 xhs whoami --json                     # Structured JSON envelope
@@ -81,7 +83,7 @@ xhs topics "美食"                      # Search hashtags/topics
 # ─── Reading ──────────────────────────────────────
 xhs read 1                             # Read the 1st result from the last list command
 xhs read <note_id>                     # Read a note (API only)
-xhs read "https://www.xiaohongshu.com/explore/xxx?xsec_token=yyy"  # Read by URL (uses URL token)
+xhs read "https://www.rednote.com/explore/xxx?xsec_token=yyy"  # Read by RedNote URL
 xhs comments 1                         # Read comments for the 1st result from the last list command
 xhs comments "<url>"                   # View comments — paste URL to cache/reuse xsec_token
 xhs comments "<url>" --all             # Fetch ALL comments (auto-paginate all pages)
@@ -148,12 +150,12 @@ xhs notifications --type connections   # 新增关注 notifications
 
 xiaohongshu-cli supports multiple authentication methods:
 
-1. **Saved cookies** — loads from `~/.xiaohongshu-cli/cookies.json`
-2. **Browser cookies** — auto-detects installed browsers and extracts cookies (supports Chrome, Arc, Edge, Firefox, Safari, Brave, Chromium, Opera, Vivaldi, and more)
-3. **QR code login** — browser-assisted login with terminal QR output (`xhs login --qrcode`)
+1. **Saved cookies** — RedNote and Xiaohongshu profiles are isolated in `cookies.rednote.json` and `cookies.xiaohongshu.json`
+2. **Browser cookies** — auto-detects installed browsers and extracts `rednote.com` cookies by default
+3. **QR code login** — Xiaohongshu browser-assisted login with terminal QR output (`xhs login --qrcode`)
 
 `xhs login` automatically tries all installed browsers and uses the first one with valid cookies.
-Use `--cookie-source <browser>` to specify a browser explicitly, or `--qrcode` for browser-assisted QR login.
+Use `--cookie-source <browser>` to specify a browser. Use `--cookie-domain xiaohongshu` for the upstream cookie source, or `--qrcode` for Xiaohongshu QR login.
 Other authenticated commands automatically retry once with fresh browser cookies when the saved session has expired.
 
 ### Cookie TTL
@@ -215,7 +217,7 @@ xiaohongshu-cli ships with a [`SKILL.md`](./SKILL.md) that teaches AI agents how
 ### [Skills CLI](https://github.com/vercel-labs/skills) (Recommended)
 
 ```bash
-npx skills add jackwener/xiaohongshu-cli
+npx skills add shuenrui/xiaohongshu-cli
 ```
 
 | Flag | Description |
@@ -228,7 +230,7 @@ npx skills add jackwener/xiaohongshu-cli
 
 ```bash
 mkdir -p .agents/skills
-git clone git@github.com:jackwener/xiaohongshu-cli.git .agents/skills/xiaohongshu-cli
+git clone git@github.com:shuenrui/xiaohongshu-cli.git .agents/skills/xiaohongshu-cli
 ```
 
 ### ~~OpenClaw / ClawHub~~ (Deprecated)
@@ -285,9 +287,10 @@ uv run ruff check .
 
 **Q: `NoCookieError: No 'a1' cookie found`**
 
-1. Open any browser and visit https://www.xiaohongshu.com/
+1. Open any browser and visit https://www.rednote.com/
 2. Log in with your account
 3. Run `xhs login` (auto-detects browser) or `xhs login --cookie-source <browser>`
+4. To use Xiaohongshu cookies instead, run `xhs login --cookie-domain xiaohongshu`
 
 **Q: `NeedVerifyError: Captcha required`**
 
@@ -332,17 +335,17 @@ The built-in Gaussian jitter delay (~1-1.5s between requests) is intentional to 
 
 ```bash
 # 推荐：uv tool（快速、隔离环境）
-uv tool install xiaohongshu-cli
+uv tool install git+https://github.com/shuenrui/xiaohongshu-cli.git
 
 # 或者：pipx
-pipx install xiaohongshu-cli
+pipx install git+https://github.com/shuenrui/xiaohongshu-cli.git
 ```
 
 升级到最新版本：
 
 ```bash
-uv tool upgrade xiaohongshu-cli
-# 或：pipx upgrade xiaohongshu-cli
+uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
+# 或：pipx install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
 ```
 
 > **提示：** 建议定期升级，避免因版本过旧导致的 API 调用异常。
@@ -350,7 +353,7 @@ uv tool upgrade xiaohongshu-cli
 从源码安装：
 
 ```bash
-git clone git@github.com:jackwener/xiaohongshu-cli.git
+git clone git@github.com:shuenrui/xiaohongshu-cli.git
 cd xiaohongshu-cli
 uv sync
 ```
@@ -430,8 +433,8 @@ xhs notifications --type connections   # 新增关注通知
 
 xiaohongshu-cli 支持多种认证方式：
 
-1. **已保存 Cookie** — 从 `~/.xiaohongshu-cli/cookies.json` 加载
-2. **浏览器 Cookie** — 自动检测已安装浏览器并提取（支持 Chrome、Arc、Edge、Firefox、Safari、Brave、Chromium、Opera、Vivaldi 等）
+1. **已保存 Cookie** — RedNote 与小红书 Cookie 分别保存到 `cookies.rednote.json` 和 `cookies.xiaohongshu.json`
+2. **浏览器 Cookie** — 默认从 `rednote.com` 提取；可用 `--cookie-domain xiaohongshu` 切换
 3. **二维码扫码登录** — browser-assisted 登录，终端显示二维码，用小红书 App 扫码（`xhs login --qrcode`）
 
 Cookie 保存后有效期 **7 天**，超时后自动尝试从浏览器刷新。
@@ -440,7 +443,7 @@ Cookie 保存后有效期 **7 天**，超时后自动尝试从浏览器刷新。
 
 ## 常见问题
 
-- `NoCookieError: No 'a1' cookie found` — 请先在任意浏览器打开 https://www.xiaohongshu.com/ 并登录，然后执行 `xhs login`
+- `NoCookieError: No 'a1' cookie found` — 请先在任意浏览器打开 https://www.rednote.com/ 并登录，然后执行 `xhs login`
 - `NeedVerifyError` — 触发了验证码，请到浏览器中完成验证后重试
 - `IpBlockedError` — IP 被限制，尝试切换网络（手机热点或 VPN）
 - `SessionExpiredError` — Cookie 过期，执行 `xhs login` 刷新
@@ -453,7 +456,7 @@ xiaohongshu-cli 自带 [`SKILL.md`](./SKILL.md)，让 AI Agent 能自动学习�
 ### [Skills CLI](https://github.com/vercel-labs/skills)（推荐）
 
 ```bash
-npx skills add jackwener/xiaohongshu-cli
+npx skills add shuenrui/xiaohongshu-cli
 ```
 
 | 参数 | 说明 |
@@ -466,7 +469,7 @@ npx skills add jackwener/xiaohongshu-cli
 
 ```bash
 mkdir -p .agents/skills
-git clone git@github.com:jackwener/xiaohongshu-cli.git .agents/skills/xiaohongshu-cli
+git clone git@github.com:shuenrui/xiaohongshu-cli.git .agents/skills/xiaohongshu-cli
 ```
 
 ### ~~OpenClaw / ClawHub~~（已过时）
