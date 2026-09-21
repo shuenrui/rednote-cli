@@ -25,7 +25,7 @@ class SessionExpiredError(XhsApiError):
     """Raised when the session has expired."""
 
     def __init__(self):
-        super().__init__("Session expired — please re-login with: xhs login", code=-100)
+        super().__init__("Session expired - please re-login with: rednote login", code=-100)
 
 
 class IpBlockedError(XhsApiError):
@@ -63,5 +63,5 @@ class NoCookieError(XhsApiError):
         msg += "\n\nTroubleshooting:\n"
         msg += f"  1. Open a browser and visit https://www.{domain}/\n"
         msg += "  2. Make sure you are logged in\n"
-        msg += "  3. Try: xhs login --cookie-source <browser>"
+        msg += "  3. Try: rednote login --cookie-source <browser>"
         super().__init__(msg)

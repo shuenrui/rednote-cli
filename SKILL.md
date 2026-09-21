@@ -1,42 +1,42 @@
 ---
-name: xiaohongshu-cli
-description: Use xiaohongshu-cli with RedNote browser cookies for Xiaohongshu (Little Red Book, 小红书) operations — searching notes, reading content, browsing users, liking, collecting, commenting, following, and posting.
+name: rednote-cli
+description: Use rednote-cli with RedNote browser cookies for Xiaohongshu (Little Red Book, 小红书) operations — searching notes, reading content, browsing users, liking, collecting, commenting, following, and posting.
 author: shuenrui
 version: "0.6.4"
 tags:
   - xiaohongshu
-  - xhs
+  - rednote
   - redbook
   - 小红书
   - social-media
   - cli
 ---
 
-# xiaohongshu-cli — Xiaohongshu CLI Tool
+# rednote-cli — Xiaohongshu CLI Tool
 
-**Binary:** `xhs`
+**Binary:** `rednote`
 **Credentials:** `rednote.com` browser cookies by default, or Xiaohongshu browser-assisted QR login (`--qrcode`)
 
 ## Setup
 
 ```bash
 # Install (requires Python 3.10+)
-uv tool install git+https://github.com/shuenrui/xiaohongshu-cli.git
-# Or: pipx install git+https://github.com/shuenrui/xiaohongshu-cli.git
+uv tool install git+https://github.com/shuenrui/rednote-cli.git
+# Or: pipx install git+https://github.com/shuenrui/rednote-cli.git
 
 # Upgrade to latest (recommended to avoid API errors)
-uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
-# Or: pipx install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
+uv tool install --force git+https://github.com/shuenrui/rednote-cli.git
+# Or: pipx install --force git+https://github.com/shuenrui/rednote-cli.git
 ```
 
 ## Authentication
 
-**IMPORTANT FOR AGENTS**: Before executing ANY xhs command, check if credentials exist first. Do NOT assume cookies are configured.
+**IMPORTANT FOR AGENTS**: Before executing ANY rednote command, check if credentials exist first. Do NOT assume cookies are configured.
 
 ### Step 0: Check if already authenticated
 
 ```bash
-xhs status --yaml >/dev/null && echo "AUTH_OK" || echo "AUTH_NEEDED"
+rednote status --yaml >/dev/null && echo "AUTH_OK" || echo "AUTH_NEEDED"
 ```
 
 If `AUTH_OK`, skip to [Command Reference](#command-reference).
@@ -47,17 +47,17 @@ If `AUTH_NEEDED`, proceed to Step 1. Prefer `--qrcode` when browser cookie extra
 Ensure user is logged into rednote.com in any browser supported by [browser_cookie3](https://github.com/borisbabic/browser_cookie3). Supported browsers: Chrome, Arc, Edge, Firefox, Safari, Brave, Chromium, Opera, Opera GX, Vivaldi, LibreWolf, Lynx, w3m. Then:
 
 ```bash
-xhs login                              # auto-detect browser with valid cookies
-xhs login --cookie-source arc          # specify browser explicitly
-xhs login --cookie-domain xiaohongshu  # optional upstream cookie source
-xhs login --qrcode                     # Xiaohongshu QR login with terminal QR output
+rednote login                              # auto-detect browser with valid cookies
+rednote login --cookie-source arc          # specify browser explicitly
+rednote login --cookie-domain xiaohongshu  # optional upstream cookie source
+rednote login --qrcode                     # Xiaohongshu QR login with terminal QR output
 ```
 
 Verify with:
 
 ```bash
-xhs status
-xhs whoami
+rednote status
+rednote whoami
 ```
 
 ### Step 2: Handle common auth issues
@@ -67,7 +67,7 @@ xhs whoami
 | `NoCookieError: No 'a1' cookie found` | Guide user to log in to rednote.com in a browser |
 | `NeedVerifyError: Captcha required` | Ask user to open browser, complete captcha, then retry |
 | `IpBlockedError: IP blocked` | Suggest switching network (hotspot/VPN) |
-| `SessionExpiredError` | Run `xhs login` to refresh cookies |
+| `SessionExpiredError` | Run `rednote login` to refresh cookies |
 
 ## Agent Defaults
 
@@ -85,121 +85,121 @@ Payloads live under `.data`.
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `xhs search <keyword>` | Search notes | `xhs search "美食" --sort popular --type video` |
-| `xhs read <id_or_url_or_index>` | Read a note by ID, URL, or short index | `xhs read 1` / `xhs read "https://...?xsec_token=xxx"` |
-| `xhs comments <id_or_url_or_index>` | Get comments by ID, URL, or short index | `xhs comments 1` / `xhs comments "https://...?xsec_token=..."` |
-| `xhs comments <id_or_url> --all` | Get ALL comments (auto-paginate) | `xhs comments "<url>" --all --json` |
-| `xhs sub-comments <note_id> <comment_id>` | Get replies to comment | `xhs sub-comments abc 123` |
-| `xhs user <user_id>` | View user profile | `xhs user 5f2e123` |
-| `xhs user-posts <user_id>` | List user's notes | `xhs user-posts 5f2e123 --cursor ""` |
-| `xhs feed` | Browse recommendation feed | `xhs feed --yaml` |
-| `xhs hot` | Browse trending notes | `xhs hot -c food` |
-| `xhs topics <keyword>` | Search topics/hashtags | `xhs topics "旅行"` |
-| `xhs search-user <keyword>` | Search users | `xhs search-user "摄影"` |
-| `xhs my-notes` | List own published notes | `xhs my-notes --page 0` |
-| `xhs notifications` | View notifications | `xhs notifications --type likes` |
-| `xhs unread` | Show unread counts | `xhs unread --json` |
+| `rednote search <keyword>` | Search notes | `rednote search "美食" --sort popular --type video` |
+| `rednote read <id_or_url_or_index>` | Read a note by ID, URL, or short index | `rednote read 1` / `rednote read "https://...?xsec_token=xxx"` |
+| `rednote comments <id_or_url_or_index>` | Get comments by ID, URL, or short index | `rednote comments 1` / `rednote comments "https://...?xsec_token=..."` |
+| `rednote comments <id_or_url> --all` | Get ALL comments (auto-paginate) | `rednote comments "<url>" --all --json` |
+| `rednote sub-comments <note_id> <comment_id>` | Get replies to comment | `rednote sub-comments abc 123` |
+| `rednote user <user_id>` | View user profile | `rednote user 5f2e123` |
+| `rednote user-posts <user_id>` | List user's notes | `rednote user-posts 5f2e123 --cursor ""` |
+| `rednote feed` | Browse recommendation feed | `rednote feed --yaml` |
+| `rednote hot` | Browse trending notes | `rednote hot -c food` |
+| `rednote topics <keyword>` | Search topics/hashtags | `rednote topics "旅行"` |
+| `rednote search-user <keyword>` | Search users | `rednote search-user "摄影"` |
+| `rednote my-notes` | List own published notes | `rednote my-notes --page 0` |
+| `rednote notifications` | View notifications | `rednote notifications --type likes` |
+| `rednote unread` | Show unread counts | `rednote unread --json` |
 
 ### Interactions (Write)
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `xhs like <id_or_url_or_index>` | Like a note | `xhs like 1` / `xhs like abc123` |
-| `xhs like <id_or_url_or_index> --undo` | Unlike a note | `xhs like 1 --undo` |
-| `xhs favorite <id_or_url_or_index>` | Bookmark a note | `xhs favorite 1` |
-| `xhs unfavorite <id_or_url_or_index>` | Remove bookmark | `xhs unfavorite 1` |
-| `xhs comment <id_or_url_or_index> -c "text"` | Post a comment | `xhs comment 1 -c "好看！"` |
-| `xhs reply <id_or_url_or_index> --comment-id ID -c "text"` | Reply to comment | `xhs reply 1 --comment-id 456 -c "谢谢"` |
-| `xhs delete-comment <note_id> <comment_id>` | Delete own comment | `xhs delete-comment abc 123 -y` |
+| `rednote like <id_or_url_or_index>` | Like a note | `rednote like 1` / `rednote like abc123` |
+| `rednote like <id_or_url_or_index> --undo` | Unlike a note | `rednote like 1 --undo` |
+| `rednote favorite <id_or_url_or_index>` | Bookmark a note | `rednote favorite 1` |
+| `rednote unfavorite <id_or_url_or_index>` | Remove bookmark | `rednote unfavorite 1` |
+| `rednote comment <id_or_url_or_index> -c "text"` | Post a comment | `rednote comment 1 -c "好看！"` |
+| `rednote reply <id_or_url_or_index> --comment-id ID -c "text"` | Reply to comment | `rednote reply 1 --comment-id 456 -c "谢谢"` |
+| `rednote delete-comment <note_id> <comment_id>` | Delete own comment | `rednote delete-comment abc 123 -y` |
 
 ### Social
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `xhs follow <user_id>` | Follow a user | `xhs follow 5f2e123` |
-| `xhs unfollow <user_id>` | Unfollow a user | `xhs unfollow 5f2e123` |
-| `xhs favorites [user_id]` | List bookmarked notes (defaults to self) | `xhs favorites --json` |
+| `rednote follow <user_id>` | Follow a user | `rednote follow 5f2e123` |
+| `rednote unfollow <user_id>` | Unfollow a user | `rednote unfollow 5f2e123` |
+| `rednote favorites [user_id]` | List bookmarked notes (defaults to self) | `rednote favorites --json` |
 
 ### Creator
 
 | Command | Description | Example |
 |---------|-------------|---------|
-| `xhs post --title "..." --body "..." --images img.png` | Publish a note | `xhs post --title "Test" --body "Hello"` |
-| `xhs delete <id_or_url>` | Delete own note | `xhs delete abc123 -y` |
+| `rednote post --title "..." --body "..." --images img.png` | Publish a note | `rednote post --title "Test" --body "Hello"` |
+| `rednote delete <id_or_url>` | Delete own note | `rednote delete abc123 -y` |
 
 ### Account
 
 | Command | Description |
 |---------|-------------|
-| `xhs login` | Extract cookies from browser (auto-detect) |
-| `xhs login --qrcode` | Browser-assisted QR login — terminal QR output, browser completes login |
-| `xhs status` | Check authentication status |
-| `xhs logout` | Clear cached cookies |
-| `xhs whoami` | Show current user profile |
+| `rednote login` | Extract cookies from browser (auto-detect) |
+| `rednote login --qrcode` | Browser-assisted QR login — terminal QR output, browser completes login |
+| `rednote status` | Check authentication status |
+| `rednote logout` | Clear cached cookies |
+| `rednote whoami` | Show current user profile |
 
 ## Agent Workflow Examples
 
 ### Search → Read → Like pipeline
 
 ```bash
-NOTE_ID=$(xhs search "美食推荐" --json | jq -r '.data.items[0].id')
-xhs read "$NOTE_ID" --json | jq '.data'
-xhs like "$NOTE_ID"
+NOTE_ID=$(rednote search "美食推荐" --json | jq -r '.data.items[0].id')
+rednote read "$NOTE_ID" --json | jq '.data'
+rednote like "$NOTE_ID"
 ```
 
 ### Browse trending food notes
 
 ```bash
-xhs hot -c food --json | jq '.data.items[:5] | .[].note_card | {title, likes: .interact_info.liked_count}'
+rednote hot -c food --json | jq '.data.items[:5] | .[].note_card | {title, likes: .interact_info.liked_count}'
 ```
 
 ### Get user info then follow
 
 ```bash
-xhs user 5f2e123 --json | jq '.data.basic_info | {nickname, user_id}'
-xhs follow 5f2e123
+rednote user 5f2e123 --json | jq '.data.basic_info | {nickname, user_id}'
+rednote follow 5f2e123
 ```
 
 ### Check notifications
 
 ```bash
-xhs unread --json | jq '.data'
-xhs notifications --type mentions --json | jq '.data.message_list[:5]'
+rednote unread --json | jq '.data'
+rednote notifications --type mentions --json | jq '.data.message_list[:5]'
 ```
 
 ### Analyze all comments on a note
 
 ```bash
 # Fetch ALL comments and analyze themes
-xhs comments "$NOTE_URL" --all --json | jq '.data.comments | length'
+rednote comments "$NOTE_URL" --all --json | jq '.data.comments | length'
 # Count questions
-xhs comments "$NOTE_URL" --all --json | jq '[.data.comments[] | select(.content | test("[\uff1f?]"))] | length'
+rednote comments "$NOTE_URL" --all --json | jq '[.data.comments[] | select(.content | test("[\uff1f?]"))] | length'
 ```
 
 ### Daily reading workflow
 
 ```bash
 # Browse recommendation feed
-xhs feed --yaml
+rednote feed --yaml
 
 # Interactive short-index workflow
-xhs search "旅行"
-xhs read 1
-xhs comments 1
-xhs like 1
-xhs favorite 1
-xhs comment 1 -c "收藏了"
+rednote search "旅行"
+rednote read 1
+rednote comments 1
+rednote like 1
+rednote favorite 1
+rednote comment 1 -c "收藏了"
 
 # Browse trending by category
-xhs hot -c food --yaml
-xhs hot -c travel --yaml
+rednote hot -c food --yaml
+rednote hot -c travel --yaml
 ```
 
 ### QR code login
 
 ```bash
 # When browser cookie extraction is not available
-xhs login --qrcode
+rednote login --qrcode
 # → Launches a browser-assisted login flow
 # → Renders QR in terminal using Unicode half-blocks
 # → Scan with Xiaohongshu app → confirm → export cookies
@@ -209,13 +209,13 @@ xhs login --qrcode
 
 ```bash
 # User pastes a URL → read + all comments
-xhs read "https://www.xiaohongshu.com/explore/xxx?xsec_token=yyy" --json
-xhs comments "https://www.xiaohongshu.com/explore/xxx?xsec_token=yyy" --all --json
+rednote read "https://www.xiaohongshu.com/explore/xxx?xsec_token=yyy" --json
+rednote comments "https://www.xiaohongshu.com/explore/xxx?xsec_token=yyy" --all --json
 ```
 
 ## Hot Categories
 
-Available for `xhs hot -c <category>`:
+Available for `rednote hot -c <category>`:
 `fashion`, `food`, `cosmetics`, `movie`, `career`, `love`, `home`, `gaming`, `travel`, `fitness`
 
 ## Error Codes
@@ -248,6 +248,6 @@ Structured error codes returned in the `error.code` field:
 
 - Do not ask users to share raw cookie values in chat logs.
 - Prefer local browser cookie extraction over manual secret copy/paste.
-- If auth fails, ask the user to re-login via `xhs login`.
+- If auth fails, ask the user to re-login via `rednote login`.
 - Agent should treat cookie values as secrets (do not echo to stdout unnecessarily).
 - Built-in rate-limit delay protects accounts; do not bypass it.

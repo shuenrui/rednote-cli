@@ -18,7 +18,7 @@ APP_ID = "xhs-pc-web"
 PLATFORM = "macOS"
 
 # Config directory
-CONFIG_DIR_NAME = ".xiaohongshu-cli"
+CONFIG_DIR_NAME = ".rednote-cli"
 DEFAULT_COOKIE_DOMAIN = "rednote"
 COOKIE_DOMAINS = {
     "rednote": "rednote.com",

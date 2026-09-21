@@ -136,7 +136,7 @@ def login(
         if not _is_valid_login(user):
             raise XhsApiError(
                 "Browser cookies were extracted, but the session appears invalid "
-                "(guest or incomplete profile). Try: xhs login --qrcode"
+                "(guest or incomplete profile). Try: rednote login --qrcode"
             )
 
         if not _emit_payload({"authenticated": True, "user": user}, as_json=as_json, as_yaml=as_yaml):

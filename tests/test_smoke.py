@@ -1,4 +1,4 @@
-"""Integration smoke tests for xiaohongshu-cli.
+"""Integration smoke tests for rednote-cli.
 
 These tests invoke the real CLI commands with ``--yaml`` against the live
 Xiaohongshu API using your local browser cookies.  They are **skipped by

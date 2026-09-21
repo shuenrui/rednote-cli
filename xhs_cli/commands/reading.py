@@ -26,7 +26,7 @@ def _cache_tokens_from_items(data: dict, *, xsec_source: str) -> None:
 
     Each note item may carry its own xsec_token bound to the source
     (search, feed, explore).  Caching them lets a subsequent
-    `xhs read <note_id>` use the correct token automatically.
+    `rednote read <note_id>` use the correct token automatically.
     """
     for item in data.get("items", []):
         note_card = item.get("note_card", {})

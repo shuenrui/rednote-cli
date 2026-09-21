@@ -41,7 +41,7 @@ class TestCliBasic:
     def test_help(self):
         result = runner.invoke(cli, ["--help"])
         assert result.exit_code == 0
-        assert "xhs" in result.output
+        assert "rednote" in result.output
         assert "search" in result.output
         assert "read" in result.output
 

@@ -1,4 +1,4 @@
-"""Module entry point for ``python -m xhs_cli``."""
+"""Internal module entry point for ``rednote-cli``."""
 
 from .cli import cli
 

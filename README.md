@@ -1,7 +1,7 @@
-# xiaohongshu-cli (RedNote cookies)
+# rednote-cli
 
-[![CI](https://github.com/shuenrui/xiaohongshu-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/shuenrui/xiaohongshu-cli/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue.svg)](https://pypi.org/project/xiaohongshu-cli/)
+[![CI](https://github.com/shuenrui/rednote-cli/actions/workflows/ci.yml/badge.svg)](https://github.com/shuenrui/rednote-cli/actions/workflows/ci.yml)
+[![Python](https://img.shields.io/badge/python-%3E%3D3.10-blue.svg)](https://github.com/shuenrui/rednote-cli)
 
 A RedNote-cookie fork of [jackwener/xiaohongshu-cli](https://github.com/jackwener/xiaohongshu-cli). It imports browser cookies from `rednote.com` by default, then uses the existing signed Xiaohongshu API transport for search, reading, interactions, and posting.
 
@@ -21,7 +21,7 @@ A RedNote-cookie fork of [jackwener/xiaohongshu-cli](https://github.com/jackwene
 - 🔐 **Auth** — auto-extract browser cookies, QR code login, status check, whoami
 - 🔍 **Search** — notes by keyword, user search, topic search
 - 📖 **Reading** — note detail, comments, sub-comments, user profiles
-- 🔢 **Short-index navigation** — open recent list results with `xhs read 1` or `xhs comments 1`
+- 🔢 **Short-index navigation** — open recent list results with `rednote read 1` or `rednote comments 1`
 - 📰 **Feed** — recommendation feed, hot/trending by category
 - 👥 **Social** — follow/unfollow, favorites
 - 👍 **Interactions** — like, favorite, comment, reply, delete
@@ -37,17 +37,17 @@ A RedNote-cookie fork of [jackwener/xiaohongshu-cli](https://github.com/jackwene
 
 ```bash
 # Recommended: install this fork directly from GitHub
-uv tool install git+https://github.com/shuenrui/xiaohongshu-cli.git
+uv tool install git+https://github.com/shuenrui/rednote-cli.git
 
 # Or: pipx
-pipx install git+https://github.com/shuenrui/xiaohongshu-cli.git
+pipx install git+https://github.com/shuenrui/rednote-cli.git
 ```
 
 Upgrade to the latest version:
 
 ```bash
-uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
-# Or: pipx install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
+uv tool install --force git+https://github.com/shuenrui/rednote-cli.git
+# Or: pipx install --force git+https://github.com/shuenrui/rednote-cli.git
 ```
 
 > **Tip:** Upgrade regularly to avoid unexpected errors from outdated API handling.
@@ -55,8 +55,8 @@ uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
 From source:
 
 ```bash
-git clone git@github.com:shuenrui/xiaohongshu-cli.git
-cd xiaohongshu-cli
+git clone git@github.com:shuenrui/rednote-cli.git
+cd rednote-cli
 uv sync
 ```
 
@@ -64,97 +64,97 @@ uv sync
 
 ```bash
 # ─── Auth ─────────────────────────────────────────
-xhs login                             # Extract rednote.com cookies from browser
-xhs login --cookie-domain xiaohongshu # Optional upstream cookie source
-xhs login --qrcode                    # Xiaohongshu QR login, scan in terminal
-xhs status                            # Check login status
-xhs whoami                            # Detailed profile (fans, likes, etc)
-xhs whoami --json                     # Structured JSON envelope
-xhs logout                            # Clear saved cookies
+rednote login                             # Extract rednote.com cookies from browser
+rednote login --cookie-domain xiaohongshu # Optional upstream cookie source
+rednote login --qrcode                    # Xiaohongshu QR login, scan in terminal
+rednote status                            # Check login status
+rednote whoami                            # Detailed profile (fans, likes, etc)
+rednote whoami --json                     # Structured JSON envelope
+rednote logout                            # Clear saved cookies
 
 # ─── Search ───────────────────────────────────────
-xhs search "美食"                      # Search notes
-xhs search "旅行" --sort popular       # Sort: general, popular, latest
-xhs search "穿搭" --type video         # Filter: all, video, image
-xhs search "AI" --page 2              # Pagination
-xhs search-user "用户名"               # Search users
-xhs topics "美食"                      # Search hashtags/topics
+rednote search "美食"                      # Search notes
+rednote search "旅行" --sort popular       # Sort: general, popular, latest
+rednote search "穿搭" --type video         # Filter: all, video, image
+rednote search "AI" --page 2              # Pagination
+rednote search-user "用户名"               # Search users
+rednote topics "美食"                      # Search hashtags/topics
 
 # ─── Reading ──────────────────────────────────────
-xhs read 1                             # Read the 1st result from the last list command
-xhs read <note_id>                     # Read a note (API only)
-xhs read "https://www.rednote.com/explore/xxx?xsec_token=yyy"  # Read by RedNote URL
-xhs comments 1                         # Read comments for the 1st result from the last list command
-xhs comments "<url>"                   # View comments — paste URL to cache/reuse xsec_token
-xhs comments "<url>" --all             # Fetch ALL comments (auto-paginate all pages)
-xhs comments "<url>" --all --json      # All comments as JSON
-xhs comments <note_id> --xsec-token T  # Use note_id + explicit xsec_token
-xhs comments <note_id>                 # Reuse cached token if available
-xhs sub-comments <note_id> <cmt_id>   # View replies to a comment
-xhs user <user_id>                     # User profile
-xhs user-posts <user_id>              # User's published notes
-xhs user-posts <user_id> --cursor X   # Paginate with cursor
+rednote read 1                             # Read the 1st result from the last list command
+rednote read <note_id>                     # Read a note (API only)
+rednote read "https://www.rednote.com/explore/xxx?xsec_token=yyy"  # Read by RedNote URL
+rednote comments 1                         # Read comments for the 1st result from the last list command
+rednote comments "<url>"                   # View comments — paste URL to cache/reuse xsec_token
+rednote comments "<url>" --all             # Fetch ALL comments (auto-paginate all pages)
+rednote comments "<url>" --all --json      # All comments as JSON
+rednote comments <note_id> --xsec-token T  # Use note_id + explicit xsec_token
+rednote comments <note_id>                 # Reuse cached token if available
+rednote sub-comments <note_id> <cmt_id>   # View replies to a comment
+rednote user <user_id>                     # User profile
+rednote user-posts <user_id>              # User's published notes
+rednote user-posts <user_id> --cursor X   # Paginate with cursor
 
 # ─── Feed & Discovery ────────────────────────────
-xhs feed                              # Recommendation feed
-xhs hot                               # Hot notes (default: food)
-xhs hot -c fashion                    # Categories: fashion, food, cosmetics,
+rednote feed                              # Recommendation feed
+rednote hot                               # Hot notes (default: food)
+rednote hot -c fashion                    # Categories: fashion, food, cosmetics,
                                       #   movie, career, love, home, gaming,
                                       #   travel, fitness
 
 # Short index works after list commands such as search/feed/hot/user-posts/favorites/my-notes
-xhs search "黑丝"
-xhs read 1
-xhs comments 1
-xhs like 1
-xhs favorite 1
+rednote search "黑丝"
+rednote read 1
+rednote comments 1
+rednote like 1
+rednote favorite 1
 
 # ─── Social ───────────────────────────────────────
-xhs favorites                          # My bookmarked notes (current user)
-xhs favorites <user_id>                # Other user's bookmarked notes
-xhs likes                             # My liked notes (current user)
-xhs likes <user_id>                   # Other user's liked notes
-xhs follow <user_id>                   # Follow a user
-xhs unfollow <user_id>                 # Unfollow a user
+rednote favorites                          # My bookmarked notes (current user)
+rednote favorites <user_id>                # Other user's bookmarked notes
+rednote likes                             # My liked notes (current user)
+rednote likes <user_id>                   # Other user's liked notes
+rednote follow <user_id>                   # Follow a user
+rednote unfollow <user_id>                 # Unfollow a user
 
 # ─── Interactions ─────────────────────────────────
-xhs like 1                             # Like the 1st result from the latest note listing
-xhs like <note_id>                     # Like a note
-xhs like <note_id> --undo             # Unlike
-xhs favorite 1                         # Favorite the 1st result from the latest note listing
-xhs favorite <note_id>                 # Favorite (bookmark)
-xhs unfavorite 1                       # Unfavorite the 1st result from the latest note listing
-xhs unfavorite <note_id>               # Unfavorite
-xhs comment 1 -c "好赞！"              # Comment on the 1st result from the latest note listing
-xhs comment <note_id> -c "好赞！"     # Post comment
-xhs reply 1 --comment-id X -c "回复"   # Reply on the 1st result from the latest note listing
-xhs reply <note_id> --comment-id X -c "回复"  # Reply to comment
-xhs delete-comment <note_id> <cmt_id> # Delete own comment
+rednote like 1                             # Like the 1st result from the latest note listing
+rednote like <note_id>                     # Like a note
+rednote like <note_id> --undo             # Unlike
+rednote favorite 1                         # Favorite the 1st result from the latest note listing
+rednote favorite <note_id>                 # Favorite (bookmark)
+rednote unfavorite 1                       # Unfavorite the 1st result from the latest note listing
+rednote unfavorite <note_id>               # Unfavorite
+rednote comment 1 -c "好赞！"              # Comment on the 1st result from the latest note listing
+rednote comment <note_id> -c "好赞！"     # Post comment
+rednote reply 1 --comment-id X -c "回复"   # Reply on the 1st result from the latest note listing
+rednote reply <note_id> --comment-id X -c "回复"  # Reply to comment
+rednote delete-comment <note_id> <cmt_id> # Delete own comment
 
 # ─── Creator ─────────────────────────────────────
-xhs my-notes                           # List own notes (v2 creator endpoint)
-xhs my-notes --page 1                 # Next page
-xhs post --title "标题" --body "正文" --images img.jpg  # Post note
-xhs delete <note_id>                   # Delete note
-xhs delete <note_id> -y               # Skip confirmation
+rednote my-notes                           # List own notes (v2 creator endpoint)
+rednote my-notes --page 1                 # Next page
+rednote post --title "标题" --body "正文" --images img.jpg  # Post note
+rednote delete <note_id>                   # Delete note
+rednote delete <note_id> -y               # Skip confirmation
 
 # ─── Notifications ────────────────────────────────
-xhs unread                             # Unread counts (likes, mentions, follows)
-xhs notifications                      # 评论和@ notifications
-xhs notifications --type likes        # 赞和收藏 notifications
-xhs notifications --type connections   # 新增关注 notifications
+rednote unread                             # Unread counts (likes, mentions, follows)
+rednote notifications                      # 评论和@ notifications
+rednote notifications --type likes        # 赞和收藏 notifications
+rednote notifications --type connections   # 新增关注 notifications
 
 ```
 
 ## Authentication
 
-xiaohongshu-cli supports multiple authentication methods:
+rednote-cli supports multiple authentication methods:
 
 1. **Saved cookies** — RedNote and Xiaohongshu profiles are isolated in `cookies.rednote.json` and `cookies.xiaohongshu.json`
 2. **Browser cookies** — auto-detects installed browsers and extracts `rednote.com` cookies by default
-3. **QR code login** — Xiaohongshu browser-assisted login with terminal QR output (`xhs login --qrcode`)
+3. **QR code login** — Xiaohongshu browser-assisted login with terminal QR output (`rednote login --qrcode`)
 
-`xhs login` automatically tries all installed browsers and uses the first one with valid cookies.
+`rednote login` automatically tries all installed browsers and uses the first one with valid cookies.
 Use `--cookie-source <browser>` to specify a browser. Use `--cookie-domain xiaohongshu` for the upstream cookie source, or `--qrcode` for Xiaohongshu QR login.
 Other authenticated commands automatically retry once with fresh browser cookies when the saved session has expired.
 
@@ -164,11 +164,11 @@ Saved cookies are valid for **7 days** by default. After that, the client automa
 
 ### Short-Index Navigation
 
-After any listing command such as `search`, `feed`, `hot`, `user-posts`, `favorites`, or `my-notes`, the CLI stores the latest ordered note list in `~/.xiaohongshu-cli/index_cache.json`.
+After any listing command such as `search`, `feed`, `hot`, `user-posts`, `favorites`, or `my-notes`, the CLI stores the latest ordered note list in `~/.rednote-cli/index_cache.json`.
 
-- `xhs read <N>` opens the Nth note from the latest listing
-- `xhs comments <N>` opens comments for the Nth note from the latest listing
-- `xhs like <N>`, `xhs favorite <N>`, `xhs unfavorite <N>`, `xhs comment <N>`, and `xhs reply <N>` reuse the same short index
+- `rednote read <N>` opens the Nth note from the latest listing
+- `rednote comments <N>` opens comments for the Nth note from the latest listing
+- `rednote like <N>`, `rednote favorite <N>`, `rednote unfavorite <N>`, `rednote comment <N>`, and `rednote reply <N>` reuse the same short index
 - Empty listings clear the index cache, so old results are not reused by accident
 
 ## Environment Variables
@@ -178,7 +178,7 @@ After any listing command such as `search`, `feed`, `hot`, `user-posts`, `favori
 | `OUTPUT` | `auto` | Output format: `json`, `yaml`, `rich`, or `auto` (→ YAML when non-TTY) |
 ## Rate Limiting & Anti-Detection
 
-xiaohongshu-cli includes comprehensive anti-risk-control measures designed to minimize detection:
+rednote-cli includes comprehensive anti-risk-control measures designed to minimize detection:
 
 ### Request Timing
 - **Gaussian jitter**: Delays between requests use a truncated Gaussian distribution (not fixed intervals) to mimic natural browsing patterns
@@ -212,12 +212,12 @@ Use `OUTPUT=yaml|json|rich|auto` to override.
 
 ## Use as AI Agent Skill
 
-xiaohongshu-cli ships with a [`SKILL.md`](./SKILL.md) that teaches AI agents how to use it.
+rednote-cli ships with a [`SKILL.md`](./SKILL.md) that teaches AI agents how to use it.
 
 ### [Skills CLI](https://github.com/vercel-labs/skills) (Recommended)
 
 ```bash
-npx skills add shuenrui/xiaohongshu-cli
+npx skills add shuenrui/rednote-cli
 ```
 
 | Flag | Description |
@@ -230,7 +230,7 @@ npx skills add shuenrui/xiaohongshu-cli
 
 ```bash
 mkdir -p .agents/skills
-git clone git@github.com:shuenrui/xiaohongshu-cli.git .agents/skills/xiaohongshu-cli
+git clone git@github.com:shuenrui/rednote-cli.git .agents/skills/rednote-cli
 ```
 
 ### ~~OpenClaw / ClawHub~~ (Deprecated)
@@ -289,8 +289,8 @@ uv run ruff check .
 
 1. Open any browser and visit https://www.rednote.com/
 2. Log in with your account
-3. Run `xhs login` (auto-detects browser) or `xhs login --cookie-source <browser>`
-4. To use Xiaohongshu cookies instead, run `xhs login --cookie-domain xiaohongshu`
+3. Run `rednote login` (auto-detects browser) or `rednote login --cookie-source <browser>`
+4. To use Xiaohongshu cookies instead, run `rednote login --cookie-domain xiaohongshu`
 
 **Q: `NeedVerifyError: Captcha required`**
 
@@ -302,7 +302,7 @@ Try a different network (e.g., mobile hotspot or VPN). XHS blocks IPs that make 
 
 **Q: `SessionExpiredError: Session expired`**
 
-Your cookies have expired. Run `xhs login` to refresh.
+Your cookies have expired. Run `rednote login` to refresh.
 
 **Q: Requests are slow**
 
@@ -335,17 +335,17 @@ The built-in Gaussian jitter delay (~1-1.5s between requests) is intentional to 
 
 ```bash
 # 推荐：uv tool（快速、隔离环境）
-uv tool install git+https://github.com/shuenrui/xiaohongshu-cli.git
+uv tool install git+https://github.com/shuenrui/rednote-cli.git
 
 # 或者：pipx
-pipx install git+https://github.com/shuenrui/xiaohongshu-cli.git
+pipx install git+https://github.com/shuenrui/rednote-cli.git
 ```
 
 升级到最新版本：
 
 ```bash
-uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
-# 或：pipx install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
+uv tool install --force git+https://github.com/shuenrui/rednote-cli.git
+# 或：pipx install --force git+https://github.com/shuenrui/rednote-cli.git
 ```
 
 > **提示：** 建议定期升级，避免因版本过旧导致的 API 调用异常。
@@ -353,8 +353,8 @@ uv tool install --force git+https://github.com/shuenrui/xiaohongshu-cli.git
 从源码安装：
 
 ```bash
-git clone git@github.com:shuenrui/xiaohongshu-cli.git
-cd xiaohongshu-cli
+git clone git@github.com:shuenrui/rednote-cli.git
+cd rednote-cli
 uv sync
 ```
 
@@ -362,101 +362,101 @@ uv sync
 
 ```bash
 # 认证
-xhs login                             # 从浏览器提取 Cookie
-xhs login --qrcode                    # browser-assisted 二维码扫码登录（终端显示二维码）
-xhs status                            # 检查登录状态
-xhs whoami                            # 查看用户资料
-xhs logout                            # 清除缓存的 Cookie
+rednote login                             # 从浏览器提取 Cookie
+rednote login --qrcode                    # browser-assisted 二维码扫码登录（终端显示二维码）
+rednote status                            # 检查登录状态
+rednote whoami                            # 查看用户资料
+rednote logout                            # 清除缓存的 Cookie
 
 # 搜索
-xhs search "美食"                      # 搜索笔记
-xhs search "旅行" --sort popular       # 排序：general, popular, latest
-xhs search-user "用户名"               # 搜索用户
-xhs topics "美食"                      # 搜索话题
+rednote search "美食"                      # 搜索笔记
+rednote search "旅行" --sort popular       # 排序：general, popular, latest
+rednote search-user "用户名"               # 搜索用户
+rednote topics "美食"                      # 搜索话题
 
 # 阅读
-xhs read 1                             # 阅读最近一次列表里的第 1 条笔记
-xhs read <note_id>                     # 阅读笔记（仅走 API）
-xhs read "https://...?xsec_token=..."  # 粘贴网页 URL 直接阅读（使用 URL token）
-xhs comments 1                         # 查看最近一次列表里的第 1 条笔记评论
-xhs comments "<url>"                   # 查看评论 — 粘贴 URL 以缓存/复用 xsec_token
-xhs comments "<url>" --all             # 获取全部评论（自动翻页）
-xhs comments "<url>" --all --json      # 全部评论，JSON 格式
-xhs comments <note_id> --xsec-token T  # 用 note_id + 显式 xsec_token
-xhs comments <note_id>                 # 如果之前访问过 URL，会复用缓存 token
-xhs sub-comments <note_id> <cmt_id>   # 查看评论的回复
-xhs user <user_id>                     # 用户主页
-xhs user-posts <user_id>              # 用户发布的笔记
+rednote read 1                             # 阅读最近一次列表里的第 1 条笔记
+rednote read <note_id>                     # 阅读笔记（仅走 API）
+rednote read "https://...?xsec_token=..."  # 粘贴网页 URL 直接阅读（使用 URL token）
+rednote comments 1                         # 查看最近一次列表里的第 1 条笔记评论
+rednote comments "<url>"                   # 查看评论 — 粘贴 URL 以缓存/复用 xsec_token
+rednote comments "<url>" --all             # 获取全部评论（自动翻页）
+rednote comments "<url>" --all --json      # 全部评论，JSON 格式
+rednote comments <note_id> --xsec-token T  # 用 note_id + 显式 xsec_token
+rednote comments <note_id>                 # 如果之前访问过 URL，会复用缓存 token
+rednote sub-comments <note_id> <cmt_id>   # 查看评论的回复
+rednote user <user_id>                     # 用户主页
+rednote user-posts <user_id>              # 用户发布的笔记
 
 # 发现
-xhs feed                              # 推荐 Feed
-xhs hot -c food                       # 热门笔记（按分类）
-xhs hot -c travel                     # 分类: fashion, food, cosmetics, movie, career,
+rednote feed                              # 推荐 Feed
+rednote hot -c food                       # 热门笔记（按分类）
+rednote hot -c travel                     # 分类: fashion, food, cosmetics, movie, career,
                                       #       love, home, gaming, travel, fitness
 
 # 社交
-xhs favorites                          # 我的收藏（自动识别当前用户）
-xhs favorites <user_id>                # 其他用户的收藏
-xhs likes                            # 我的点赞（自动识别当前用户）
-xhs likes <user_id>                  # 其他用户的点赞
-xhs follow <user_id>                   # 关注
-xhs unfollow <user_id>                 # 取消关注
+rednote favorites                          # 我的收藏（自动识别当前用户）
+rednote favorites <user_id>                # 其他用户的收藏
+rednote likes                            # 我的点赞（自动识别当前用户）
+rednote likes <user_id>                  # 其他用户的点赞
+rednote follow <user_id>                   # 关注
+rednote unfollow <user_id>                 # 取消关注
 
 # 互动
-xhs like 1                             # 给最近一次列表里的第 1 条笔记点赞
-xhs like <note_id>                     # 点赞
-xhs like <note_id> --undo              # 取消点赞
-xhs favorite 1                         # 收藏最近一次列表里的第 1 条笔记
-xhs favorite <note_id>                 # 收藏
-xhs unfavorite 1                       # 取消收藏最近一次列表里的第 1 条笔记
-xhs unfavorite <note_id>               # 取消收藏
-xhs comment 1 -c "好棒！"              # 给最近一次列表里的第 1 条笔记发评论
-xhs comment <note_id> -c "好棒！"      # 发评论
-xhs reply 1 --comment-id X -c "谢谢"   # 给最近一次列表里的第 1 条笔记回复评论
-xhs reply <note_id> --comment-id X -c "谢谢"  # 回复评论
-xhs delete-comment <note_id> <cmt_id>  # 删除自己的评论
+rednote like 1                             # 给最近一次列表里的第 1 条笔记点赞
+rednote like <note_id>                     # 点赞
+rednote like <note_id> --undo              # 取消点赞
+rednote favorite 1                         # 收藏最近一次列表里的第 1 条笔记
+rednote favorite <note_id>                 # 收藏
+rednote unfavorite 1                       # 取消收藏最近一次列表里的第 1 条笔记
+rednote unfavorite <note_id>               # 取消收藏
+rednote comment 1 -c "好棒！"              # 给最近一次列表里的第 1 条笔记发评论
+rednote comment <note_id> -c "好棒！"      # 发评论
+rednote reply 1 --comment-id X -c "谢谢"   # 给最近一次列表里的第 1 条笔记回复评论
+rednote reply <note_id> --comment-id X -c "谢谢"  # 回复评论
+rednote delete-comment <note_id> <cmt_id>  # 删除自己的评论
 
 # 创作者
-xhs my-notes                           # 我的笔记列表
-xhs post --title "标题" --body "正文" --images img.jpg  # 发布笔记
-xhs delete <note_id>                   # 删除笔记
-xhs delete <note_id> -y                # 跳过确认
+rednote my-notes                           # 我的笔记列表
+rednote post --title "标题" --body "正文" --images img.jpg  # 发布笔记
+rednote delete <note_id>                   # 删除笔记
+rednote delete <note_id> -y                # 跳过确认
 
 # 通知
-xhs unread                             # 未读数
-xhs notifications                      # 评论和 @ 通知
-xhs notifications --type likes         # 赞和收藏通知
-xhs notifications --type connections   # 新增关注通知
+rednote unread                             # 未读数
+rednote notifications                      # 评论和 @ 通知
+rednote notifications --type likes         # 赞和收藏通知
+rednote notifications --type connections   # 新增关注通知
 ```
 
 ## 认证策略
 
-xiaohongshu-cli 支持多种认证方式：
+rednote-cli 支持多种认证方式：
 
 1. **已保存 Cookie** — RedNote 与小红书 Cookie 分别保存到 `cookies.rednote.json` 和 `cookies.xiaohongshu.json`
 2. **浏览器 Cookie** — 默认从 `rednote.com` 提取；可用 `--cookie-domain xiaohongshu` 切换
-3. **二维码扫码登录** — browser-assisted 登录，终端显示二维码，用小红书 App 扫码（`xhs login --qrcode`）
+3. **二维码扫码登录** — browser-assisted 登录，终端显示二维码，用小红书 App 扫码（`rednote login --qrcode`）
 
 Cookie 保存后有效期 **7 天**，超时后自动尝试从浏览器刷新。
 
-`xhs login` 会自动尝试所有已安装浏览器，使用第一个有有效 Cookie 的浏览器。也可用 `--cookie-source <browser>` 指定浏览器，或 `--qrcode` 使用 browser-assisted 二维码登录。其他需认证命令在 session 过期时会自动重试一次。
+`rednote login` 会自动尝试所有已安装浏览器，使用第一个有有效 Cookie 的浏览器。也可用 `--cookie-source <browser>` 指定浏览器，或 `--qrcode` 使用 browser-assisted 二维码登录。其他需认证命令在 session 过期时会自动重试一次。
 
 ## 常见问题
 
-- `NoCookieError: No 'a1' cookie found` — 请先在任意浏览器打开 https://www.rednote.com/ 并登录，然后执行 `xhs login`
+- `NoCookieError: No 'a1' cookie found` — 请先在任意浏览器打开 https://www.rednote.com/ 并登录，然后执行 `rednote login`
 - `NeedVerifyError` — 触发了验证码，请到浏览器中完成验证后重试
 - `IpBlockedError` — IP 被限制，尝试切换网络（手机热点或 VPN）
-- `SessionExpiredError` — Cookie 过期，执行 `xhs login` 刷新
+- `SessionExpiredError` — Cookie 过期，执行 `rednote login` 刷新
 - 请求较慢是正常的 — 内置高斯随机延迟（~1-1.5s）是为了模拟人类浏览行为，避免触发风控
 
 ## 作为 AI Agent Skill 使用
 
-xiaohongshu-cli 自带 [`SKILL.md`](./SKILL.md)，让 AI Agent 能自动学习并使用本工具。
+rednote-cli 自带 [`SKILL.md`](./SKILL.md)，让 AI Agent 能自动学习并使用本工具。
 
 ### [Skills CLI](https://github.com/vercel-labs/skills)（推荐）
 
 ```bash
-npx skills add shuenrui/xiaohongshu-cli
+npx skills add shuenrui/rednote-cli
 ```
 
 | 参数 | 说明 |
@@ -469,7 +469,7 @@ npx skills add shuenrui/xiaohongshu-cli
 
 ```bash
 mkdir -p .agents/skills
-git clone git@github.com:shuenrui/xiaohongshu-cli.git .agents/skills/xiaohongshu-cli
+git clone git@github.com:shuenrui/rednote-cli.git .agents/skills/rednote-cli
 ```
 
 ### ~~OpenClaw / ClawHub~~（已过时）

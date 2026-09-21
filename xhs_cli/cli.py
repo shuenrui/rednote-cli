@@ -1,26 +1,26 @@
-"""CLI entry point for xiaohongshu-cli.
+"""CLI entry point for rednote-cli.
 
 Usage:
-    xhs login / status / logout
-    xhs search <keyword> [--sort popular|latest] [--type video|image] [--page N]
-    xhs read <id_or_url> [--xsec-token TOKEN]
-    xhs comments <id_or_url>
-    xhs user <user_id>
-    xhs user-posts <user_id> [--cursor CURSOR]
-    xhs feed
-    xhs hot [--category CATEGORY]
-    xhs topics <keyword>
-    xhs like <id_or_url> [--undo]
-    xhs favorite <id_or_url>
-    xhs unfavorite <id_or_url>
-    xhs comment <id_or_url> --content "..."
-    xhs reply <id_or_url> --comment-id ID --content "..."
-    xhs favorites [user_id]
-    xhs my-notes [--page N]
-    xhs notifications [--type mentions|likes|connections]
-    xhs unread
-    xhs post --title "..." --body "..." --images img.png
-    xhs delete <id_or_url> [-y]
+    rednote login / status / logout
+    rednote search <keyword> [--sort popular|latest] [--type video|image] [--page N]
+    rednote read <id_or_url> [--xsec-token TOKEN]
+    rednote comments <id_or_url>
+    rednote user <user_id>
+    rednote user-posts <user_id> [--cursor CURSOR]
+    rednote feed
+    rednote hot [--category CATEGORY]
+    rednote topics <keyword>
+    rednote like <id_or_url> [--undo]
+    rednote favorite <id_or_url>
+    rednote unfavorite <id_or_url>
+    rednote comment <id_or_url> --content "..."
+    rednote reply <id_or_url> --comment-id ID --content "..."
+    rednote favorites [user_id]
+    rednote my-notes [--page N]
+    rednote notifications [--type mentions|likes|connections]
+    rednote unread
+    rednote post --title "..." --body "..." --images img.png
+    rednote delete <id_or_url> [-y]
 """
 
 from __future__ import annotations
@@ -48,7 +48,7 @@ _fix_windows_encoding()
 
 
 @click.group()
-@click.version_option(version=__version__, prog_name="xhs")
+@click.version_option(version=__version__, prog_name="rednote")
 @click.option("-v", "--verbose", is_flag=True, help="Enable debug logging")
 @click.option(
     "--cookie-source",
@@ -66,7 +66,7 @@ _fix_windows_encoding()
 )
 @click.pass_context
 def cli(ctx, verbose: bool, cookie_source: str, cookie_domain: str):
-    """xhs — Xiaohongshu CLI via reverse-engineered API 📕"""
+    """rednote - Xiaohongshu CLI using RedNote browser cookies."""
     ctx.ensure_object(dict)
     ctx.obj["cookie_source"] = cookie_source
     ctx.obj["cookie_domain"] = cookie_domain

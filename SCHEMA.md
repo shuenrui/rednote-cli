@@ -1,6 +1,6 @@
 # Structured Output Schema
 
-`xiaohongshu-cli` uses a shared agent-friendly envelope for machine-readable output.
+`rednote-cli` uses a shared agent-friendly envelope for machine-readable output.
 
 ## Success
 
