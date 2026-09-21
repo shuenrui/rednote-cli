@@ -63,7 +63,7 @@ def _print_status_summary(user: dict[str, object]) -> None:
 )
 @structured_output_options
 @click.option("--qrcode", "use_qrcode", is_flag=True, default=False,
-              help="Login via QR code (scan with Xiaohongshu app)")
+              help="Login via QR code (scan with RedNote app)")
 @click.pass_context
 def login(
     ctx,
